@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D60AAA13-6A67-4A43-A96E-5BAC1E30B3F9}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>make -r 2&gt;&amp;1 | sed -e %27s/\(.[a-zA-Z]\+\):\([0-9]\+\):/\1(\2):/</NMakeBuildCommandLine>
+    <NMakeOutput>quake2ds.nds</NMakeOutput>
+    <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>make clean &amp;&amp; make</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>ARM9;_HAVE_STDC;R21</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>c:\devkitpro\libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <IncludePath>C:\devkitPro\devkitARM\arm-eabi\include;c:\devkitPro\libnds\include</IncludePath>
+    <ReferencePath />
+    <LibraryPath />
+    <SourcePath />
+    <ExcludePath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>make</NMakeBuildCommandLine>
+    <NMakeOutput>quake2ds.nds</NMakeOutput>
+    <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>make clean &amp;&amp; make</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>ARM9;WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>c:\devkitpro\libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="game_link.x" />
+    <None Include="makefile" />
+    <None Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="arm7_main.cpp" />
+    <ClCompile Include="client\cl_main.c" />
+    <ClCompile Include="client\cl_view.c" />
+    <ClCompile Include="ds_3d.c" />
+    <ClCompile Include="ds_files.c" />
+    <ClCompile Include="ds_ipc.c" />
+    <ClCompile Include="ds_main.c" />
+    <ClCompile Include="ds_textures.c" />
+    <ClCompile Include="game\g_ai.c" />
+    <ClCompile Include="game\g_chase.c" />
+    <ClCompile Include="game\g_cmds.c" />
+    <ClCompile Include="game\g_combat.c" />
+    <ClCompile Include="game\g_func.c" />
+    <ClCompile Include="game\g_items.c" />
+    <ClCompile Include="game\g_main.c" />
+    <ClCompile Include="game\g_misc.c" />
+    <ClCompile Include="game\g_monster.c" />
+    <ClCompile Include="game\g_phys.c" />
+    <ClCompile Include="game\g_save.c" />
+    <ClCompile Include="game\g_spawn.c" />
+    <ClCompile Include="game\g_svcmds.c" />
+    <ClCompile Include="game\g_target.c" />
+    <ClCompile Include="game\g_trigger.c" />
+    <ClCompile Include="game\g_turret.c" />
+    <ClCompile Include="game\g_utils.c" />
+    <ClCompile Include="game\g_weapon.c" />
+    <ClCompile Include="game\libc_wrap.c" />
+    <ClCompile Include="game\m_actor.c" />
+    <ClCompile Include="game\m_berserk.c" />
+    <ClCompile Include="game\m_boss2.c" />
+    <ClCompile Include="game\m_boss3.c" />
+    <ClCompile Include="game\m_boss31.c" />
+    <ClCompile Include="game\m_boss32.c" />
+    <ClCompile Include="game\m_brain.c" />
+    <ClCompile Include="game\m_chick.c" />
+    <ClCompile Include="game\m_flash.c" />
+    <ClCompile Include="game\m_flipper.c" />
+    <ClCompile Include="game\m_float.c" />
+    <ClCompile Include="game\m_flyer.c" />
+    <ClCompile Include="game\m_gladiator.c" />
+    <ClCompile Include="game\m_gunner.c" />
+    <ClCompile Include="game\m_hover.c" />
+    <ClCompile Include="game\m_infantry.c" />
+    <ClCompile Include="game\m_insane.c" />
+    <ClCompile Include="game\m_medic.c" />
+    <ClCompile Include="game\m_move.c" />
+    <ClCompile Include="game\m_mutant.c" />
+    <ClCompile Include="game\m_parasite.c" />
+    <ClCompile Include="game\m_soldier.c" />
+    <ClCompile Include="game\m_supertank.c" />
+    <ClCompile Include="game\m_tank.c" />
+    <ClCompile Include="game\p_client.c" />
+    <ClCompile Include="game\p_hud.c" />
+    <ClCompile Include="game\p_trail.c" />
+    <ClCompile Include="game\p_weapon.c" />
+    <ClCompile Include="game\q_shared.c" />
+    <ClCompile Include="keyboard\touchkeyboard.c" />
+    <ClCompile Include="malloc.c" />
+    <ClCompile Include="memory.c" />
+    <ClCompile Include="null\in_null.c" />
+    <ClCompile Include="null\snd_null.c" />
+    <ClCompile Include="null\sys_null.c" />
+    <ClCompile Include="null\vid_null.c" />
+    <ClCompile Include="qcommon\cmd.c" />
+    <ClCompile Include="qcommon\cmodel.c" />
+    <ClCompile Include="qcommon\common.c" />
+    <ClCompile Include="qcommon\crc.c" />
+    <ClCompile Include="qcommon\cvar.c" />
+    <ClCompile Include="qcommon\files.c" />
+    <ClCompile Include="qcommon\md4.c" />
+    <ClCompile Include="qcommon\net_chan.c" />
+    <ClCompile Include="qcommon\pmove.c" />
+    <ClCompile Include="ram.c" />
+    <ClCompile Include="ref_nds\r_draw.c" />
+    <ClCompile Include="ref_nds\r_image.c" />
+    <ClCompile Include="ref_nds\r_main.c" />
+    <ClCompile Include="ref_nds\r_model.c" />
+    <ClCompile Include="r_cache.c" />
+    <ClCompile Include="server\sv_init.c" />
+    <ClCompile Include="snd_null_7.cpp" />
+    <ClCompile Include="stamp.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="game\game.h" />
+    <ClInclude Include="game\g_local.h" />
+    <ClInclude Include="game\m_actor.h" />
+    <ClInclude Include="game\m_berserk.h" />
+    <ClInclude Include="game\m_boss2.h" />
+    <ClInclude Include="game\m_boss31.h" />
+    <ClInclude Include="game\m_boss32.h" />
+    <ClInclude Include="game\m_brain.h" />
+    <ClInclude Include="game\m_chick.h" />
+    <ClInclude Include="game\m_flipper.h" />
+    <ClInclude Include="game\m_float.h" />
+    <ClInclude Include="game\m_flyer.h" />
+    <ClInclude Include="game\m_gladiator.h" />
+    <ClInclude Include="game\m_gunner.h" />
+    <ClInclude Include="game\m_hover.h" />
+    <ClInclude Include="game\m_infantry.h" />
+    <ClInclude Include="game\m_insane.h" />
+    <ClInclude Include="game\m_medic.h" />
+    <ClInclude Include="game\m_mutant.h" />
+    <ClInclude Include="game\m_parasite.h" />
+    <ClInclude Include="game\m_player.h" />
+    <ClInclude Include="game\m_rider.h" />
+    <ClInclude Include="game\m_soldier.h" />
+    <ClInclude Include="game\m_supertank.h" />
+    <ClInclude Include="game\m_tank.h" />
+    <ClInclude Include="game\q_shared.h" />
+    <ClInclude Include="memory.h" />
+    <ClInclude Include="qcommon\crc.h" />
+    <ClInclude Include="qcommon\qcommon.h" />
+    <ClInclude Include="qcommon\qfiles.h" />
+    <ClInclude Include="quake_ipc.h" />
+    <ClInclude Include="ram.h" />
+    <ClInclude Include="r_cache.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
