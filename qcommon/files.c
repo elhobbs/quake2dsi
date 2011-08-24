@@ -399,9 +399,9 @@ int FS_LoadFile (char *path, void **buffer)
 	FILE	*h;
 	byte	*buf;
 	int		len;
-	register unsigned int lr_r asm ("lr");
-	unsigned int lr = lr_r;
-	printf("FS_LoadFile: %08x\n", lr);
+	//register unsigned int lr_r asm ("lr");
+	//unsigned int lr = lr_r;
+	//printf("FS_LoadFile: %08x\n", lr);
 
 	buf = NULL;	// quiet compiler warning
 

@@ -1369,7 +1369,7 @@ void *Z_Malloc (int size)
 {
 	register unsigned int lr_r asm ("lr");
 	unsigned int lr = lr_r;
-	printf("Z_Malloc: %08x\n", lr);
+	//printf("Z_Malloc: %08x\n", lr);
 
 	return Z_TagMalloc (size, 0);
 }
