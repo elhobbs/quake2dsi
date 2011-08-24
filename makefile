@@ -1,4 +1,4 @@
-ROOT=/c/devkitPro/devkitARM/bin
+ROOT=$(DEVKITARM)/bin
 
 CC=$(ROOT)/arm-eabi-gcc
 CXX=$(ROOT)/arm-eabi-g++
@@ -7,9 +7,9 @@ OBJCOPY=$(ROOT)/arm-eabi-objcopy
 
 THUMB = #-mthumb
 
-INCLUDES="c:/devkitPro/libnds/include"
-LIBNDS_INCLUDES="c:/devkitPro/libnds/include/nds"
-LIBDIR="c:/devkitPro/libnds/lib"
+INCLUDES="$(DEVKITPRO)/libnds/include"
+LIBNDS_INCLUDES="$(DEVKITPRO)/libnds/include/nds"
+LIBDIR="$(DEVKITPRO)/libnds/lib"
 COPY_TO=/cygdrive/l/default.nds
 #GAME_COPY_TO=/cygdrive/l/gamearm.bin
 
@@ -225,12 +225,6 @@ gamearm.elf: $(GAME_OBJS) game/q_shared.o $(GAME_WRAPPER)
 	echo linking $@
 	$(CC) $(GAME_WRAPPER) game/q_shared.o $(GAME_OBJS) -o $@ -Wl,-T game_link.x -lm -nostartfiles
 
-gamearm.bin: gamearm.elf
-	echo making game library $@
-	$(OBJCOPY) $^ -O binary $@
-	echo copying $(GAME_COPY_TO)
-	cp gamearm.bin $(GAME_COPY_TO)
-
 quake2.elf: $(ALL_ARM9_OBJS) stamp.o
 	echo linking $@
 	$(CXX) $(ALL_ARM9_OBJS) keyboard/keyboard_pal.o keyboard/keyboard.o stamp.o $(LD_OPTS) -o $@
@@ -244,9 +238,7 @@ stamp.o: $(ALL_ARM9_OBJS) stamp.c
 	
 quake2.nds: quake2.elf arm7.elf #gamearm.bin
 	echo making and copying $(COPY_TO)
-	$(OBJCOPY) -O binary quake2.elf quake2.bin
-	$(OBJCOPY) -O binary arm7.elf arm7.bin
-	$(ROOT)/ndstool -c quake2.nds -9 quake2.bin -7 arm7.bin > output.txt
+	$(ROOT)/ndstool -c quake2.nds -9 quake2.elf -7 arm7.elf > output.txt
 	#dlditool M3sd.dldi quake2.nds
 	#cp quake2.nds $(COPY_TO)
 
