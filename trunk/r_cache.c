@@ -16,10 +16,10 @@ void r_cache_print(int size) {
 }
 
 void r_cache_clear() {
-	printf("r_cache_clear\n");
-	r_cache_print(0);
-	while((keysCurrent() & KEY_A) == 0);
-	while((keysCurrent() & KEY_A) != 0);
+	//printf("r_cache_clear\n");
+	//r_cache_print(0);
+	//while((keysCurrent() & KEY_A) == 0);
+	//while((keysCurrent() & KEY_A) != 0);
 	r_model_cache_used = r_model_cache_temp = 0;
 }
 

@@ -651,7 +651,7 @@ int register_texture_deferred(char *name, unsigned char *data, int sizeX, int si
 {
 	int count;
 	
-	printf("registering a deferred texture\n");
+	//printf("registering a deferred texture\n");
 //	//test to see if it's already been loaded once
 #ifdef TEXTURES_HAVE_NAMES
 	for (count = 0; count < num_managed_textures; count++)
@@ -700,7 +700,7 @@ int register_texture_deferred(char *name, unsigned char *data, int sizeX, int si
 		while(1);
 	}
 	
-	printf("loading %s as %d DEFERRED\n", name, id);
+	//printf("loading %s as %d DEFERRED\n", name, id);
 	
 	num_managed_textures++;
 	
@@ -739,7 +739,7 @@ int register_texture_deferred(char *name, unsigned char *data, int sizeX, int si
 	
 	t->address = NULL;
 	
-	printf("bound %d: %s, size %d\n", id, name, sizeX * sizeY);
+	//printf("bound %d: %s, size %d\n", id, name, sizeX * sizeY);
 	
 	return id;
 }

@@ -196,14 +196,14 @@ model_t *Mod_ForName (char *name, qboolean crash)
 	
 	case IDBSPHEADER:
 		{
-		register unsigned int lr_r asm ("lr");
-		unsigned int lr = lr_r;
-		printf("already in RAM mode, %08x\n", lr);
+		//register unsigned int lr_r asm ("lr");
+		//unsigned int lr = lr_r;
+		//printf("already in RAM mode, %08x\n", lr);
 
-		r_cache_print(0);
-		printf("Mod_ForName: %s\n",name);
-		while((keysCurrent()&KEY_A) == 0);
-		while((keysCurrent()&KEY_A) != 0);
+		//r_cache_print(0);
+		//printf("Mod_ForName: %s\n",name);
+		//while((keysCurrent()&KEY_A) == 0);
+		//while((keysCurrent()&KEY_A) != 0);
 
 		loadmodel->extradata = Hunk_Begin (5*1024*1024);//(0x580000);
 		Mod_LoadBrushModel (mod, buf);

@@ -505,7 +505,7 @@ int main(int argc, char **argv)
 	
 	init_arm7();
 	
-	int proper_argc = 6;
+	int proper_argc = 4;
 	char *proper_argv[6];
 	char argv0[20], argv1[20], argv2[20], argv3[20], argv4[20], argv5[20];
 	
@@ -513,8 +513,8 @@ int main(int argc, char **argv)
 	strcpy(argv1, "+set");
 	strcpy(argv2, "basedir");
 	strcpy(argv3, "/");
-	strcpy(argv4, "+map");
-	strcpy(argv5, "demo1");
+	//strcpy(argv4, "+map");
+	//strcpy(argv5, "demo1");
 	
 	proper_argv[0] = argv0;
 	proper_argv[1] = argv1;

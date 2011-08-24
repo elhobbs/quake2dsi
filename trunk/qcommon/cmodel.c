@@ -656,14 +656,14 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	FILE			*h;
 	static unsigned	last_checksum;
 
-	register unsigned int lr_r asm ("lr");
-	unsigned int lr = lr_r;
-	printf("already in RAM mode, %08x\n", lr);
+	//register unsigned int lr_r asm ("lr");
+	//unsigned int lr = lr_r;
+	//printf("already in RAM mode, %08x\n", lr);
 
-	r_cache_print(0);
-	printf("CM_LoadMap: %s\n",name);
-	while((keysCurrent()&KEY_A) == 0);
-	while((keysCurrent()&KEY_A) != 0);
+	//r_cache_print(0);
+	//printf("CM_LoadMap: %s\n",name);
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 	
 //	ds_swap_sound(true);
 
@@ -735,33 +735,33 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
 	CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
 	CMod_LoadPlanes (&header.lumps[LUMP_PLANES]);
-	check_planes("1");
+	//check_planes("1");
 	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES]);
-	check_planes("2");
+	//check_planes("2");
 	CMod_LoadBrushSides (&header.lumps[LUMP_BRUSHSIDES]);
-	check_planes("3");
+	//check_planes("3");
 	CMod_LoadSubmodels (&header.lumps[LUMP_MODELS]);
-	check_planes("4");
+	//check_planes("4");
 	CMod_LoadNodes (&header.lumps[LUMP_NODES]);
-	check_planes("5");
+	//check_planes("5");
 	CMod_LoadAreas (&header.lumps[LUMP_AREAS]);
-	check_planes("6");
+	//check_planes("6");
 	CMod_LoadAreaPortals (&header.lumps[LUMP_AREAPORTALS]);
-	check_planes("7");
+	//check_planes("7");
 	CMod_LoadVisibility (&header.lumps[LUMP_VISIBILITY]);
-	check_planes("8");
+	//check_planes("8");
 	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
-	check_planes("9");
+	//check_planes("9");
 	
 	//FS_FreeFile (buf);
 	Z_Free(buf);
 
 	CM_InitBoxHull ();
-	check_planes("10");
+	//check_planes("10");
 
 	memset (portalopen, 0, sizeof(portalopen));
 	FloodAreaConnections ();
-	check_planes("11");
+	//check_planes("11");
 
 	strcpy (map_name, name);
 
