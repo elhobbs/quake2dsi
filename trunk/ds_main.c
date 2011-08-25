@@ -1,6 +1,4 @@
 #include <nds.h>
-#include <nds/registers_alt.h>
-#include <nds/arm9/console.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -56,22 +54,25 @@ void enable_keyb(void)
 {
 	use_osk = true;
 	videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE);
-	SUB_BLEND_AB = (15 << 8) | 31;
+	REG_BLDALPHA_SUB = (15 << 8) | 31;
+	bgShow(4);
 }
 
 void disable_keyb(void)
 {
 	use_osk = false;
 	videoSetModeSub(MODE_0_2D | DISPLAY_BG1_ACTIVE);
+	bgHide(4);
 }
 
 void toggle_keyb(void)
 {
 	if (use_osk)
 	{
-		if (show_mode == 0)
+		if (show_mode == 0) {
 			set_keyb_show_mode(1);
-		else
+			enable_keyb();
+		} else
 		{
 			set_keyb_show_mode(0);
 			disable_keyb();
@@ -118,7 +119,8 @@ void vblank_handler(void)
 
 void get_pen_pos(short *px, short *py)
 {
-	touchPosition touchXY = touchReadXY();
+	touchPosition touchXY;
+	touchRead(&touchXY);
 	*px = touchXY.px;
 	*py = touchXY.py;
 }
@@ -208,7 +210,7 @@ void ds_reinit_console(unsigned char *font)
 			source += 128;
 		}
 
-		BGCTRL_SUB[1] = BG_MAP_BASE(9) | BG_TILE_BASE(0) | BgSize_T_256x256 | BG_COLOR_256;
+		BGCTRL_SUB[1] = (u16)(BG_MAP_BASE(9) | BG_TILE_BASE(0) | BgSize_T_256x256 | BG_COLOR_256);
  
 
 		
@@ -298,7 +300,7 @@ int main(int argc, char **argv)
  	vramSetBankA(VRAM_A_LCD);
 #endif
  	
- 	BG0_CR = BG_MAP_BASE(31);
+ 	REG_BG0CNT = BG_MAP_BASE(31);
  	videoSetModeSub(MODE_0_2D | DISPLAY_BG1_ACTIVE);
 
 	vramSetBankH(VRAM_H_SUB_BG);
@@ -308,7 +310,7 @@ int main(int argc, char **argv)
 	bgInitSub(0,BgType_Text4bpp,BgSize_T_256x256,10,2);
 	//videoBgDisableSub(0);
 	bgSetPriority(4,0);
-	bgSetPriority(4,1);
+	bgSetPriority(5,1);
 	//SUB_BG1_CR = BG_MAP_BASE(9) | BG_256_COLOR;
 	
 	//SUB_BLEND_CR = BLEND_SRC_BG0 | BLEND_DST_BG1 | BLEND_ALPHA;
@@ -356,8 +358,6 @@ int main(int argc, char **argv)
 	//the first time it is call it will break until you decide to resume
 	//you can call this more than once in your program
 	user_debugger_update();			//the earlier you call it, the earlier you can pause your program
-#else
-	//irqInit();
 #endif
 	
 	irqSet(IRQ_VBLANK, (void (*)())vblank_handler);

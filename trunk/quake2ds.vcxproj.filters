@@ -263,6 +263,9 @@
     <ClCompile Include="ref_nds\r_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ref_nds\r_alias.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quake_ipc.h">

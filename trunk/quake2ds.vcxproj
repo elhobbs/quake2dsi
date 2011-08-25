@@ -135,6 +135,7 @@
     <ClCompile Include="qcommon\net_chan.c" />
     <ClCompile Include="qcommon\pmove.c" />
     <ClCompile Include="ram.c" />
+    <ClCompile Include="ref_nds\r_alias.c" />
     <ClCompile Include="ref_nds\r_draw.c" />
     <ClCompile Include="ref_nds\r_image.c" />
     <ClCompile Include="ref_nds\r_main.c" />
