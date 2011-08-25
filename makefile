@@ -8,7 +8,6 @@ OBJCOPY=$(ROOT)/arm-eabi-objcopy
 THUMB = #-mthumb
 
 INCLUDES="$(DEVKITPRO)/libnds/include"
-LIBNDS_INCLUDES="$(DEVKITPRO)/libnds/include/nds"
 LIBDIR="$(DEVKITPRO)/libnds/lib"
 COPY_TO=/cygdrive/l/default.nds
 #GAME_COPY_TO=/cygdrive/l/gamearm.bin
@@ -18,7 +17,7 @@ COPY_TO=/cygdrive/l/default.nds
 #LIBDIR="/home/simon/devkitpro/devkitARM/lib/"
 #COPY_TO=/media/disk/DEFAULT.NDS
 
-OPTS=-Dstricmp=strcasecmp -I $(INCLUDES) -I $(LIBNDS_INCLUDES) -DARM9 -DR21 -DGAME_HARD_LINKED -mthumb-interwork -Os -g -mtune=arm9 -march=armv5te $(THUMB) -fno-rtti -fno-exceptions -Wno-write-strings
+OPTS=-Dstricmp=strcasecmp -I $(INCLUDES) -DARM9 -DR21 -DGAME_HARD_LINKED -mthumb-interwork -Os -g -mtune=arm946e-s -march=armv5te $(THUMB) -fno-rtti -fno-exceptions -Wno-write-strings
 #OPTS+=-finstrument-functions -mpoke-function-name
 
 LD_OPTS=-specs=ds_arm9.specs -L$(LIBDIR) -lfat -lnds9 -lm -Wl,-Map,$(notdir $*.map),-zmuldefs
@@ -211,7 +210,15 @@ LOOSE_OBJS= \
 	ds_textures.o \
 	ram.o \
 	r_cache.o \
-	keyboard/touchkeyboard.o
+	keyboard/touchkeyboard.o \
+	keyboard/keyboard_pal.o \
+	keyboard/keyboard.o
+
+keyboard/keyboard.o: keyboard/keyboard.raw
+	$(ROOT)/bin2s $< | $(AS) -o $(@)
+
+keyboard/keyboard_pal.o: keyboard/keyboard_pal.raw
+	$(ROOT)/bin2s $< | $(AS) -o $(@)
 	
 ARM7_OBJS= \
 	arm7_main.o \
@@ -227,7 +234,7 @@ gamearm.elf: $(GAME_OBJS) game/q_shared.o $(GAME_WRAPPER)
 
 quake2.elf: $(ALL_ARM9_OBJS) stamp.o
 	echo linking $@
-	$(CXX) $(ALL_ARM9_OBJS) keyboard/keyboard_pal.o keyboard/keyboard.o stamp.o $(LD_OPTS) -o $@
+	$(CXX) $(ALL_ARM9_OBJS) keyboard/keyboard_pal.o keyboard/touchkeyboard.o stamp.o $(LD_OPTS) -o $@
 
 arm7.elf: $(ALL_ARM7_OBJS)
 	echo linking $@

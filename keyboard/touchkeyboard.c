@@ -251,7 +251,7 @@ void drawKeyboard(int tileBase, int mapBase)
 	else
 		return;
 		
-	printf("drawKeyboard\n");
+//	printf("drawKeyboard\n");
 	gmapBase = mapBase;
 	gtileBase = tileBase;
 		
@@ -263,6 +263,8 @@ void drawKeyboard(int tileBase, int mapBase)
 	{
 		for (int r = 0; r < 4096; r++)
 			((u16 *) CHAR_BASE_BLOCK_SUB(tileBase))[r] = ((u16 *) (keyboard_raw))[r];
+		for (int r = 0; r < 16; r++)
+			BG_PALETTE_SUB[r] = ((u16*)(keyboard_pal_raw))[r];
 		inited = true;
 	}
 	
