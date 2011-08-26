@@ -465,7 +465,7 @@ void Mod_LoadLighting (lump_t *l)
 	
 	//	loadmodel->lightdata = Hunk_Alloc (size);
 	ds_set_malloc_base(MEM_XTRA);
-	loadmodel->lightdata = (byte *)ds_malloc(size);
+	loadmodel->lightdata = (byte *)Z_Malloc(size);//ds_malloc(size);
 	ds_set_malloc_base(MEM_MAIN);
 	
 	if (loadmodel->lightdata == NULL)
@@ -479,7 +479,7 @@ void Mod_LoadLighting (lump_t *l)
 		byte_write(&loadmodel->lightdata[i + 2], in[2]);
 	}
 
-	Z_Free(in1);
+	//Z_Free(in1);
 }
 #else
 void Mod_LoadLighting (lump_t *l)
@@ -889,6 +889,10 @@ void Mod_LoadFaces (lump_t *l)
 	loadmodel->surfaces = out;
 	loadmodel->numsurfaces = count;
 
+#define LIGHT_BYTE_COUNT 512
+	int cb_buf = 0;
+	byte *buf = (unsigned char *)Hunk_Alloc(LIGHT_BYTE_COUNT);
+		
 	for ( surfnum=0 ; surfnum<count ; surfnum++, in++, out++)
 	{
 		out->firstedge = LittleLong(in->firstedge);
@@ -916,15 +920,23 @@ void Mod_LoadFaces (lump_t *l)
 
 #ifdef COLOURED_LIGHTS
 		i = LittleLong(in->lightofs);
-		
+
 		if (i == -1)
 			out->samples = (unsigned char *)(1 << 10);		//cos we check for this number later
 		else
 		{
 			int total[3];
 			total[0] = total[1] = total[2] = 255;
+
+			cb_buf += 3;
+			if(cb_buf > LIGHT_BYTE_COUNT) {
+				cb_buf = 0;
+				buf = (unsigned char *)Hunk_Alloc(LIGHT_BYTE_COUNT);
+			}
+			out->samples = buf;
+			buf += 3;
 			
-			out->samples = (unsigned char *)Hunk_Alloc(3);
+			//out->samples = (unsigned char *)Hunk_Alloc(3);
 			
 			if (out->samples == NULL)
 				Sys_Error("failed to allocate surface light colour\n");
@@ -1499,12 +1511,14 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadVertexes (&header->lumps[LUMP_VERTEXES]);
 	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
 	Mod_LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
-	Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
+	//Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
 	Mod_LoadPlanes (&header->lumps[LUMP_PLANES]);
 	Mod_LoadTexinfo (&header->lumps[LUMP_TEXINFO]);
+	
+	Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
 	Mod_LoadFaces (&header->lumps[LUMP_FACES]);
 	
-	ds_free(loadmodel->lightdata);
+	//ds_free(loadmodel->lightdata);
 	loadmodel->lightdata = NULL;
 	
 	Mod_LoadMarksurfaces (&header->lumps[LUMP_LEAFFACES]);

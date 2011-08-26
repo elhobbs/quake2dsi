@@ -681,6 +681,7 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	}
 
 	// free old stuff
+	r_cache_clear();
 	numplanes = 0;
 	numnodes = 0;
 	numleafs = 0;
