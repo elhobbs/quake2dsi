@@ -234,9 +234,6 @@ void SV_SpawnServer (char *server, char *spawnpoint, server_state_t serverstate,
 	strcpy (sv.name, server);
 	strcpy (sv.configstrings[CS_NAME], server);
 
-	void r_cache_clear();
-	r_cache_clear();
-
 	if (serverstate != ss_game)
 	{
 		sv.models[1] = CM_LoadMap ("", false, &checksum);	// no real map

@@ -52,7 +52,14 @@ void Sys_Error (char *error, ...)
 	va_end (argptr);
 	printf ("\n");
 	register unsigned int link_register asm ("lr");
+
+void disable_keyb(void);
+	disable_keyb();
 	
+void r_cache_print(int size);
+
+	r_cache_print(0);
+
 	printf("link register is %08x\n", link_register);
 
 #ifdef USE_DEBUGGER
