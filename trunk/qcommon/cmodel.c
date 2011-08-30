@@ -708,6 +708,9 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	//length = FS_LoadFile (name, (void **)&buf);
 	//if (!buf)
 	//	Com_Error (ERR_DROP, "Couldn't load %s", name);
+	//printf("CM_LoadMap: %s\n",name);
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 	length = FS_FOpenFile (name, &h);
 	if (!h)
 	{

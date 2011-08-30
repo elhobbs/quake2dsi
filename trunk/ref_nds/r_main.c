@@ -404,6 +404,8 @@ R_NewMap
 */
 void R_NewMap (void)
 {
+extern int r_rache_is_empty;
+	r_rache_is_empty = 0;
 //	r_viewcluster = -1;
 //
 //	r_cnumsurfs = sw_maxsurfs->value;

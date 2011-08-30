@@ -266,6 +266,21 @@
     <ClCompile Include="ref_nds\r_alias.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ref_nds\r_bsp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_nds\r_rast.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="server\sv_user.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="server\sv_game.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="server\sv_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quake_ipc.h">

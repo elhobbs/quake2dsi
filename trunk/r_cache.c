@@ -10,6 +10,10 @@ int r_cache_count = 0;
 int r_cache_max = 0;
 
 void disable_keyb(void);
+void waitforit() {
+	while((keysCurrent()&KEY_A) == 0);
+	while((keysCurrent()&KEY_A) != 0);
+}
 
 void print_top_four_blocks_kb(void);
 void r_cache_print(int size) {
@@ -24,7 +28,13 @@ void r_cache_print_f(void) {
 	r_cache_print(0);
 }
 
+int r_rache_is_empty = 0;
 void r_cache_clear() {
+	r_rache_is_empty = 1;
+	disable_keyb();
+	//printf("r_cache_clear\n");
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 	//printf("r_cache_clear\n");
 	//r_cache_print(0);
 	//while((keysCurrent() & KEY_A) == 0);
@@ -32,6 +42,19 @@ void r_cache_clear() {
 	r_cache_count = 0;
 	r_cache_max = 0;
 	r_model_cache_used = r_model_cache_temp = 0;
+}
+
+void r_cache_valid_ptr(void *p) {
+	byte *pp = (byte *)p;
+
+	if(pp < r_model_cache || pp>(r_model_cache+r_model_cache_total)) {
+		printf("ERROR: r_cache_valid_ptr\n");
+		printf("pp: %08X\n",pp);
+		r_cache_print(0);
+		disable_keyb();
+		while(1);
+	}
+
 }
 
 void r_cache_init() {
@@ -44,8 +67,13 @@ void r_cache_init() {
 	r_cache_clear();
 	Cmd_AddCommand( "cache", r_cache_print_f );
 }
+static int r_model_cache_used_last;
+int r_cache_end() {
+	return r_model_cache_used - r_model_cache_used_last;
+}
 
 byte *r_cache_current(int x) {
+	r_model_cache_used_last = r_model_cache_used;
 	byte *buf = &r_model_cache[r_model_cache_used];
 	return buf;
 }

@@ -13,6 +13,8 @@ byte* r_cache_alloc(int size);
 byte* r_cache_alloc_temp(int size);
 void r_cache_free_temp(void *p);
 byte *r_cache_current(int x);
+int r_cache_end();
+void r_cache_valid_ptr(void *p);
 
 #define Z_Malloc(_x) r_cache_alloc_temp(_x)
 
@@ -22,7 +24,7 @@ byte *r_cache_current(int x);
 
 #define Hunk_Begin(_x) r_cache_current(_x)
 
-#define Hunk_End(_x) (0xdeadbeef)
+#define Hunk_End r_cache_end
 
 #define Hunk_Free(_x)
 

@@ -1794,6 +1794,9 @@ void R_BeginRegistration (char *model)
 //		while(1);
 //	hit_count++;
 	
+	//printf("R_RegisterModel: %s\n",fullname);
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 	r_worldmodel = R_RegisterModel (fullname);
 	R_NewMap ();
 }
@@ -1811,6 +1814,8 @@ struct model_s *R_RegisterModel (char *name)
 	int		i;
 	dsprite_t	*sprout;
 	dmdl_t		*pheader;
+
+	//Com_Printf("R_RegisterModel: %s\n",name);
 
 	mod = Mod_ForName (name, false);
 	if (mod)
@@ -1895,6 +1900,9 @@ void Mod_FreeAll (void)
 	int		i;
 
 	//r_cache_clear();
+	//printf("Mod_FreeAll\n");
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 
 	for (i=0 ; i<mod_numknown ; i++)
 	{
