@@ -1413,8 +1413,10 @@ void SCR_UpdateScreen (void)
 			SCR_DrawLoading ();
 			
 			set_gui_not_loading();
+	extern int r_rache_is_empty;
 			
-			V_RenderView ( separation[i] );
+			if(!r_rache_is_empty)
+				V_RenderView ( separation[i] );
 		}
 	}
 	re.EndFrame();

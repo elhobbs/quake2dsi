@@ -243,7 +243,6 @@ void V_TestLights (void)
 }
 
 //===================================================================
-
 /*
 =================
 CL_PrepRefresh
@@ -264,6 +263,10 @@ void CL_PrepRefresh (void)
 
 	if (!cl.configstrings[CS_MODELS+1][0])
 		return;		// no map loaded
+
+//	printf("CL_PrepRefresh\n");
+//void waitforit();
+//	waitforit();
 
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width-1, viddef.height-1);

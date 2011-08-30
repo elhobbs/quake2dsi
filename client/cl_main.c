@@ -1437,7 +1437,7 @@ void CL_InitLocal (void)
 	cl_add_entities = Cvar_Get ("cl_entities", "1", 0);
 	cl_gun = Cvar_Get ("cl_gun", "1", 0);
 	cl_footsteps = Cvar_Get ("cl_footsteps", "1", 0);
-	cl_noskins = Cvar_Get ("cl_noskins", "0", 0);
+	cl_noskins = Cvar_Get ("cl_noskins", "1", 0);
 	cl_autoskins = Cvar_Get ("cl_autoskins", "0", 0);
 	cl_predict = Cvar_Get ("cl_predict", "1", 0);
 //	cl_minfps = Cvar_Get ("cl_minfps", "5", 0);

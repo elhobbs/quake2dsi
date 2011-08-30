@@ -856,11 +856,16 @@ void R_AliasSetupFrames( dmdl_t *pmdl )
 		lastframe = 0;
 	}
 
+	//ri.Con_Printf (PRINT_ALL, "%08X %d %d %d\n",pmdl, thisframe,pmdl->ofs_frames,pmdl->framesize);
 	r_thisframe = (daliasframe_t *)((byte *)pmdl + pmdl->ofs_frames 
 		+ thisframe * pmdl->framesize);
 
 	r_lastframe = (daliasframe_t *)((byte *)pmdl + pmdl->ofs_frames 
 		+ lastframe * pmdl->framesize);
+
+void r_cache_valid_ptr(void *p);
+	r_cache_valid_ptr(r_thisframe);
+	r_cache_valid_ptr(r_lastframe);
 }
 
 /*
