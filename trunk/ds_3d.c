@@ -150,14 +150,14 @@ void ds_end_render(void)
 //	printf("%d polys, %d verts\n", GFX_POLYGON_RAM_USAGE, GFX_VERTEX_RAM_USAGE);
 	unsigned short *text_map = (unsigned short *)SCREEN_BASE_BLOCK_SUB(9);
 	if (GFX_VERTEX_RAM_USAGE >= 6144)
-		text_map[30] = 0xf056;
+		text_map[30] = 0x0056;//0xf056;
 	else
-		text_map[30] = 0x0000;
+		text_map[30] = 0x0020;
 	
 	if (GFX_POLYGON_RAM_USAGE >= 2048)
-		text_map[31] = 0xf050;
+		text_map[31] = 0x0050;//0xf050;
 	else
-		text_map[31] = 0x0000;
+		text_map[31] = 0x0020;
 		
 	if (doing_texture_loads)
 	{
@@ -183,7 +183,9 @@ void ds_ortho(void)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-110, 110, -80, 80, 1.0f, 0x7fff);
+	//glOrtho(-110, 110, -80, 80, 1.0f, 0x7fff);
+	glOrthof32(floattof32(-110), floattof32(110), floattof32(-80), floattof32(80), -1 << 12, 1 << 12);
+	//glOrthof32( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1 << 12, 1 << 12 );  // downscale projection matrix
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);

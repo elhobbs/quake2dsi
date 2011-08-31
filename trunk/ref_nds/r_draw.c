@@ -879,20 +879,57 @@ void R_ZDrawSubmodelPolys (model_t *pmodel)
 }
 
 float tri_z;
+static v16 g_depth = 0;
 
 void reset_triz(void)
 {
+	g_depth = 0;
 	tri_z = 1.0f;
 }
 
 void next_triz(void)
 {
+	g_depth++;
 	tri_z += 0.0f;
 }
 
 #ifdef R21
 #define glTexCoord2t16(x, y) glTexCoord2t16(y, x)
 #endif
+
+/******************************************************************************
+	
+	Direct copy of glVertex3v16()
+	I made this since VideoGL don't have a
+	glVertex#i() wrappers
+
+******************************************************************************/
+static inline void gxVertex3i(v16 x, v16 y, v16 z)
+{
+	GFX_VERTEX16 = (y << 16) | (x & 0xFFFF);
+	GFX_VERTEX16 = ((uint32)(uint16)z);
+}
+
+
+
+/******************************************************************************
+
+	Again no gxVertex2i() in the videoGL header
+	This is used for optimizing vertex calls
+
+******************************************************************************/
+static inline void gxVertex2i(v16 x, v16 y)
+{
+	GFX_VERTEX_XY = (y << 16) | (x & 0xFFFF);	
+}
+
+static inline void gxVertex3f(float x,float y) {
+	gxVertex3i(floattov16(x), floattov16(y), g_depth);
+}
+
+static inline void gxVertex2f(float x,float y) {
+	gxVertex2i(floattov16(x), floattov16(y));
+}
 
 void D_DrawQuad(int u, int v, int iz, float s, float t,
 	int u2, int v2, int iz2, float s2, float t2,
@@ -925,16 +962,20 @@ void D_DrawQuad(int u, int v, int iz, float s, float t,
 	DS_COLOUR3B(255, 255, 255);
 	
 	glTexCoord2t16((short)((t * tex_height) * 16), (short)((s * tex_width) * 16));
-	glVertex3f((float)u * tri_scale, -(float)v * tri_scale, tri_z);
+	gxVertex3f((float)u * tri_scale, -(float)v * tri_scale);
+	//glVertex3f((float)u * tri_scale, -(float)v * tri_scale, tri_z);
 	
 	glTexCoord2t16((short)((t2 * tex_height) * 16), (short)((s2 * tex_width) * 16));
-	glVertex3f((float)u2 * tri_scale, -(float)v2 * tri_scale, tri_z);
+	gxVertex2f((float)u2 * tri_scale, -(float)v2 * tri_scale);
+	//glVertex3f((float)u2 * tri_scale, -(float)v2 * tri_scale, tri_z);
 	
 	glTexCoord2t16((short)((t3 * tex_height) * 16), (short)((s3 * tex_width) * 16));
-	glVertex3f((float)u3 * tri_scale, -(float)v3 * tri_scale, tri_z);
+	gxVertex2f((float)u3 * tri_scale, -(float)v3 * tri_scale);
+	//glVertex3f((float)u3 * tri_scale, -(float)v3 * tri_scale, tri_z);
 	
 	glTexCoord2t16((short)((t4 * tex_height) * 16), (short)((s4 * tex_width) * 16));
-	glVertex3f((float)u4 * tri_scale, -(float)v4 * tri_scale, tri_z);
+	gxVertex2f((float)u4 * tri_scale, -(float)v4 * tri_scale);
+	//glVertex3f((float)u4 * tri_scale, -(float)v4 * tri_scale, tri_z);
 	
 	next_triz();
 }
