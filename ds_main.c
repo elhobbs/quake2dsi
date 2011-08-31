@@ -90,10 +90,10 @@ void vblank_handler(void)
 	update_count++;
 //	hblanks += 262;
 	
-	if (blanks & 0x1)
-		*(u16*)SCREEN_BASE_BLOCK_SUB(31) = 0xf058;
-	else
-		*(u16*)SCREEN_BASE_BLOCK_SUB(31) = 0xf02b;
+	//if (blanks & 0x1)
+	//	*(u16*)SCREEN_BASE_BLOCK_SUB(31) = 0xf058;
+	//else
+	//	*(u16*)SCREEN_BASE_BLOCK_SUB(31) = 0xf02b;
 	
 	if (new_palette != NULL)
 	{

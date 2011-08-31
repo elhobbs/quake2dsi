@@ -64,7 +64,10 @@
   <ItemGroup>
     <ClCompile Include="arm7_main.cpp" />
     <ClCompile Include="client\cl_main.c" />
+    <ClCompile Include="client\cl_scrn.c" />
     <ClCompile Include="client\cl_view.c" />
+    <ClCompile Include="client\menu.c" />
+    <ClCompile Include="client\qmenu.c" />
     <ClCompile Include="ds_3d.c" />
     <ClCompile Include="ds_files.c" />
     <ClCompile Include="ds_ipc.c" />
@@ -123,7 +126,9 @@
     <ClCompile Include="memory.c" />
     <ClCompile Include="null\in_null.c" />
     <ClCompile Include="null\snd_null.c" />
+    <ClCompile Include="null\swimp_null.c" />
     <ClCompile Include="null\sys_null.c" />
+    <ClCompile Include="null\vid_menu.c" />
     <ClCompile Include="null\vid_null.c" />
     <ClCompile Include="qcommon\cmd.c" />
     <ClCompile Include="qcommon\cmodel.c" />

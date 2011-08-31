@@ -233,7 +233,8 @@ typedef struct miptex_s
 
 #define	MAX_MAP_AREAS		256
 #define	MAX_MAP_AREAPORTALS	1024
-#define	MAX_MAP_PLANES		13774
+//#define	MAX_MAP_PLANES		13774
+#define	MAX_MAP_PLANES		16000
 #define	MAX_MAP_NODES		9252
 #define	MAX_MAP_BRUSHSIDES	36100
 #define	MAX_MAP_LEAFS		9398

@@ -439,7 +439,8 @@ void CMod_LoadPlanes (lump_t *l)
 	if (count > MAX_MAP_PLANES)
 		Com_Error (ERR_DROP, "Map has too many planes, %d", count);
 
-	map_planes = (cplane_t *)Hunk_Alloc(sizeof(cplane_t) * (MAX_MAP_PLANES+6));//(count+12));
+	//map_planes = (cplane_t *)Hunk_Alloc(sizeof(cplane_t) * (MAX_MAP_PLANES+6));//(count+12));
+	map_planes = (cplane_t *)Hunk_Alloc(sizeof(cplane_t) * (count+32));//(count+12));
 	out = map_planes;	
 	numplanes = count;
 
