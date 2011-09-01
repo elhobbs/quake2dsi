@@ -124,6 +124,7 @@
     <ClCompile Include="keyboard\touchkeyboard.c" />
     <ClCompile Include="malloc.c" />
     <ClCompile Include="memory.c" />
+    <ClCompile Include="null\cd_null.c" />
     <ClCompile Include="null\in_null.c" />
     <ClCompile Include="null\snd_null.c" />
     <ClCompile Include="null\swimp_null.c" />
