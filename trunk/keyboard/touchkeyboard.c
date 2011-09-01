@@ -328,7 +328,8 @@ void disable_keyb(void);
 
 int addKeyboardEvents()
 {
-	if ((keysDown() & (1 << 12)) == (1 << 12))
+	//if ((keysDown() & KEY_TOUCH) == KEY_TOUCH)
+	if ((keysCurrent() & KEY_TOUCH) == KEY_TOUCH)
 	{
 		short x, y;
 		get_pen_pos(&x, &y);

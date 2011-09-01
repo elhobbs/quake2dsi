@@ -296,6 +296,9 @@
     <ClCompile Include="client\cl_scrn.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="null\cd_null.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quake_ipc.h">
