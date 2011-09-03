@@ -120,12 +120,12 @@ NULL_OBJS= \
 	null/cd_null.o \
 	null/in_null.o \
 	null/net_udp.o \
-	null/snd_null.o \
 	null/swimp_null.o \
 	null/sys_null.o \
 	null/vid_null.o \
 	null/m_flash_dll.o \
 	null/glob.o \
+	null/snddma_null.o \
 	null/vid_menu.o
 	
 QCOMMON_OBJS= \
@@ -221,9 +221,7 @@ keyboard/keyboard_pal.o: keyboard/keyboard_pal.raw
 	$(ROOT)/bin2s $< | $(AS) -o $(@)
 	
 ARM7_OBJS= \
-	arm7_main.o \
-	snd_null_7.o \
-	ref_nds/r_bsp_7.o
+	main7.o
 
 ALL_ARM9_OBJS=$(LOOSE_OBJS) $(SERVER_OBJS) $(REF_NDS_OBJS) $(QCOMMON_OBJS) $(NULL_OBJS) $(GAME_OBJS) $(CLIENT_OBJS)
 ALL_ARM7_OBJS=$(ARM7_OBJS)
@@ -238,7 +236,7 @@ quake2.elf: $(ALL_ARM9_OBJS) stamp.o
 
 arm7.elf: $(ALL_ARM7_OBJS)
 	echo linking $@
-	$(CXX) $(ALL_ARM7_OBJS) -mthumb-interwork -marm -specs=ds_arm7.specs -L$(LIBDIR) -lnds7 -o $@ -Wl,-zmuldefs
+	$(CXX) $(ALL_ARM7_OBJS) -mthumb-interwork -marm -specs=ds_arm7.specs -L$(LIBDIR) -ldswifi7 -lmm7 -lnds7 -o $@ -Wl,-zmuldefs
 
 stamp.o: $(ALL_ARM9_OBJS) stamp.c
 	$(CXX) -c stamp.c -o stamp.o

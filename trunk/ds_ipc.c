@@ -106,6 +106,8 @@ bool ipc_disabled = false;
 unsigned int num_kb_loads = 0;
 extern volatile int texture_critical_section;
 void printw(char *str);
+
+#if 0
 void handle_ipc2(fifo_msg *msg)
 {
 //	if (files_locked())
@@ -356,3 +358,4 @@ void handle_ipc2(fifo_msg *msg)
 		//quake_ipc_7to9->message = 0;
 	//}
 }
+#endif

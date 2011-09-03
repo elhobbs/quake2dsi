@@ -183,18 +183,25 @@ void CL_RegisterSounds (void)
 //	register unsigned int lr_r asm ("lr");
 //	volatile unsigned int lr = lr_r;
 	
-//	printf("registering sounds, %08x\n", lr);
+	printf("sounds\n0%%");
 
 	S_BeginRegistration ();
 	CL_RegisterTEntSounds ();
 	for (i=1 ; i<MAX_SOUNDS ; i++)
 	{
+		if (i >= 2) {
+			if (((i - 1) % (MAX_SOUNDS / 5)) == 0) {
+				printf("..%d%%", (int)((float)(i - 1) / MAX_SOUNDS * 100));
+			}
+		}
 		if (!cl.configstrings[CS_SOUNDS+i][0])
 			break;
 		cl.sound_precache[i] = S_RegisterSound (cl.configstrings[CS_SOUNDS+i]);
 		Sys_SendKeyEvents ();	// pump message loop
 	}
 	S_EndRegistration ();
+	
+	printf ("\n"); 
 }
 
 

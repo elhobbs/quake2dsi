@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 // snd_dma.c -- main control for any streaming sound output device
-#if 0
+#if 1
 #include "client.h"
 #include "snd_loc.h"
 
@@ -61,7 +61,8 @@ int   		paintedtime; 	// sample PAIRS
 // than could actually be referenced during gameplay,
 // because we don't want to free anything until we are
 // sure we won't need it.
-#define		MAX_SFX		(MAX_SOUNDS*2)
+//#define		MAX_SFX		(MAX_SOUNDS*2)
+#define		MAX_SFX		(576)
 sfx_t		known_sfx[MAX_SFX];
 int			num_sfx;
 
@@ -260,7 +261,7 @@ sfx_t *S_AliasName (char *aliasname, char *truename)
 	char	*s;
 	int		i;
 
-	s = Z_Malloc (MAX_QPATH);
+	s = (char *)Z_Malloc (MAX_QPATH);
 	strcpy (s, truename);
 
 	// find a free sfx
@@ -293,8 +294,15 @@ S_BeginRegistration
 */
 void S_BeginRegistration (void)
 {
+	int		i;
+	sfx_t	*sfx;
+
 	s_registration_sequence++;
 	s_registering = true;
+	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
+	{
+		sfx->cache = 0;
+	}
 }
 
 /*
@@ -339,8 +347,8 @@ void S_EndRegistration (void)
 			continue;
 		if (sfx->registration_sequence != s_registration_sequence)
 		{	// don't need this sound
-			if (sfx->cache)	// it is possible to have a leftover
-				Z_Free (sfx->cache);	// from a server that didn't finish loading
+			//if (sfx->cache)	// it is possible to have a leftover
+			//	Z_Free (sfx->cache);	// from a server that didn't finish loading
 			memset (sfx, 0, sizeof(*sfx));
 		}
 		else
@@ -354,15 +362,47 @@ void S_EndRegistration (void)
 
 	}
 
-	// load everything in
+	/*// load everything in
+	int snd_total = 0;
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
 	{
 		if (!sfx->name[0])
 			continue;
 		S_LoadSound (sfx);
+		if(sfx->cache) {
+			snd_total += sfx->cache->length;
+		}
 	}
 
+void r_cache_print(int size);
+	printf("\nsound: %d\n",snd_total);
+	r_cache_print(0);
+	while(1);*/
+
 	s_registering = false;
+}
+
+void S_Precache (void)
+{
+	int		i;
+	sfx_t	*sfx;
+	int		size;
+
+	// load everything in
+	int snd_total = 0;
+	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
+	{
+		if (!sfx->name[0])
+			continue;
+		S_LoadSound (sfx);
+		if(sfx->cache) {
+			snd_total += sfx->cache->length;
+		}
+	}
+
+	printf("\nsound: %d\n",snd_total);
+	while((keysCurrent()&KEY_A) == 0);
+	while((keysCurrent()&KEY_A) != 0);
 }
 
 
@@ -1129,7 +1169,7 @@ void S_Update_(void)
 // check to make sure that we haven't overshot
 	if (paintedtime < soundtime)
 	{
-		Com_DPrintf ("S_Update_ : overflow\n");
+		Com_Printf ("S_Update_ : overflow\n");
 		paintedtime = soundtime;
 	}
 

@@ -18,10 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 // snd_mem.c: sound caching
-#if 0
+#if 1
 
 #include "client.h"
 #include "snd_loc.h"
+#include "../r_cache.h"
+#include "../null/ds.h"
 
 int			cache_full_cycle;
 
@@ -53,10 +55,11 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 		sc->loopstart = sc->loopstart / stepscale;
 
 	sc->speed = dma.speed;
-	if (s_loadas8bit->value)
+	//we are forcing 8 bit sound
+	//if (s_loadas8bit->value)
 		sc->width = 1;
-	else
-		sc->width = inwidth;
+	//else
+	//	sc->width = inwidth;
 	sc->stereo = 0;
 
 // resample / decimate to the current source rate
@@ -127,35 +130,60 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	else
 		Com_sprintf (namebuffer, sizeof(namebuffer), "sound/%s", name);
 
-//	Com_Printf ("loading %s\n",namebuffer);
+	printf ("loading %s\n",namebuffer);
 
-	size = FS_LoadFile (namebuffer, (void **)&data);
-
-	if (!data)
-	{
-		Com_DPrintf ("Couldn't load %s\n", namebuffer);
+	//size = FS_LoadFile (namebuffer, (void **)&data);
+	FILE *h;
+	size = FS_FOpenFile (namebuffer, &h);
+	if (!h) {
+		printf ("Couldn't load %s\n", namebuffer);
 		return NULL;
 	}
+	r_cache_set_fail(0);
+	data = (byte *)Z_Malloc(size);
+	if (!data)
+	{
+		r_cache_set_fail(1);
+		ds_fclose (h);
+		printf ("Couldn't load %s\n", namebuffer);
+		return NULL;
+	}
+	FS_Read (data, size, h);
+	ds_fclose (h);
 
 	info = GetWavinfo (s->name, data, size);
 	if (info.channels != 1)
 	{
-		Com_Printf ("%s is a stereo sample\n",s->name);
-		FS_FreeFile (data);
+		r_cache_set_fail(1);
+		printf ("%s is a stereo sample\n",s->name);
+		//FS_FreeFile (data);
+		Z_Free(data);
 		return NULL;
 	}
 
 	stepscale = (float)info.rate / dma.speed;	
 	len = info.samples / stepscale;
+	/*if (info.width != 1)
+	{
+		r_cache_set_fail(1);
+		printf ("%s is a 16 bit sample\n",s->name);
+		//FS_FreeFile (data);
+		Z_Free(data);
+		return NULL;
+	}*/
 
-	len = len * info.width * info.channels;
+	//we are forcing 8 bit sound
+	//len = len * info.width * info.channels;
 
-	sc = s->cache = Z_Malloc (len + sizeof(sfxcache_t));
+	sc = s->cache = (sfxcache_t *)Hunk_Alloc (len + sizeof(sfxcache_t) + 4);//pad by 4 just to be certain - too lazy to check
 	if (!sc)
 	{
-		FS_FreeFile (data);
+		r_cache_set_fail(1);
+		//FS_FreeFile (data);
+		Z_Free(data);
 		return NULL;
 	}
+	r_cache_set_fail(1);
 	
 	sc->length = info.samples;
 	sc->loopstart = info.loopstart;
@@ -165,7 +193,8 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 
 	ResampleSfx (s, sc->speed, sc->width, data + info.dataofs);
 
-	FS_FreeFile (data);
+	//FS_FreeFile (data);
+	Z_Free(data);
 
 	return sc;
 }
@@ -231,7 +260,7 @@ void FindNextChunk(char *name)
 //			Sys_Error ("FindNextChunk: %i length is past the 1 meg sanity limit", iff_chunk_len);
 		data_p -= 8;
 		last_chunk = data_p + 8 + ( (iff_chunk_len + 1) & ~1 );
-		if (!strncmp(data_p, name, 4))
+		if (!strncmp((const char *)data_p, name, 4))
 			return;
 	}
 }
@@ -281,7 +310,7 @@ wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 
 // find "RIFF" chunk
 	FindChunk("RIFF");
-	if (!(data_p && !strncmp(data_p+8, "WAVE", 4)))
+	if (!(data_p && !strncmp((const char *)data_p+8, "WAVE", 4)))
 	{
 		Com_Printf("Missing RIFF/WAVE chunks\n");
 		return info;
@@ -322,7 +351,7 @@ wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 		FindNextChunk ("LIST");
 		if (data_p)
 		{
-			if (!strncmp (data_p + 28, "mark", 4))
+			if (!strncmp ((const char *)data_p + 28, "mark", 4))
 			{	// this is not a proper parse, but it works with cooledit...
 				data_p += 24;
 				i = GetLittleLong ();	// samples in loop
