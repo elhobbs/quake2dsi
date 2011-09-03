@@ -254,7 +254,7 @@ void fifo_DataHandler(int bytes, void *user_data) {
 	fifo_msg msg;
 
 	fifoGetDatamsg(FIFO_7to9, bytes, (u8*)&msg);
-	handle_ipc2(&msg);
+	//handle_ipc2(&msg);
 }
 #ifdef ARM9
 extern bool __dsimode;
@@ -503,7 +503,7 @@ int main(int argc, char **argv)
 	
 	//printf("\tSlot %d FAT driver\n", 0);//ds_find_dldi_slot());
 	
-	init_arm7();
+	//init_arm7();
 	
 	int proper_argc = 4;
 	char *proper_argv[6];

@@ -63,11 +63,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="arm7_main.cpp" />
+    <ClCompile Include="client\cl_cin.c" />
+    <ClCompile Include="client\cl_ents.c" />
+    <ClCompile Include="client\cl_fx.c" />
+    <ClCompile Include="client\cl_input.c" />
+    <ClCompile Include="client\cl_inv.c" />
     <ClCompile Include="client\cl_main.c" />
+    <ClCompile Include="client\cl_newfx.c" />
+    <ClCompile Include="client\cl_parse.c" />
     <ClCompile Include="client\cl_scrn.c" />
+    <ClCompile Include="client\cl_tent.c" />
     <ClCompile Include="client\cl_view.c" />
+    <ClCompile Include="client\console.c" />
+    <ClCompile Include="client\keys.c" />
     <ClCompile Include="client\menu.c" />
     <ClCompile Include="client\qmenu.c" />
+    <ClCompile Include="client\snd_dma.c" />
+    <ClCompile Include="client\snd_mem.c" />
+    <ClCompile Include="client\snd_mix.c" />
     <ClCompile Include="ds_3d.c" />
     <ClCompile Include="ds_files.c" />
     <ClCompile Include="ds_ipc.c" />
@@ -126,9 +139,9 @@
     <ClCompile Include="memory.c" />
     <ClCompile Include="null\cd_null.c" />
     <ClCompile Include="null\in_null.c" />
+    <ClCompile Include="null\snddma_null.c" />
     <ClCompile Include="null\snd_null.c" />
     <ClCompile Include="null\swimp_null.c" />
-    <ClCompile Include="null\sys_null.c" />
     <ClCompile Include="null\vid_menu.c" />
     <ClCompile Include="null\vid_null.c" />
     <ClCompile Include="qcommon\cmd.c" />
@@ -149,10 +162,15 @@
     <ClCompile Include="ref_nds\r_model.c" />
     <ClCompile Include="ref_nds\r_rast.c" />
     <ClCompile Include="r_cache.c" />
+    <ClCompile Include="server\sv_ccmds.c" />
+    <ClCompile Include="server\sv_ents.c" />
     <ClCompile Include="server\sv_game.c" />
     <ClCompile Include="server\sv_init.c" />
     <ClCompile Include="server\sv_main.c" />
+    <ClCompile Include="server\sv_send.c" />
     <ClCompile Include="server\sv_user.c" />
+    <ClCompile Include="server\sv_world.c" />
+    <ClCompile Include="snd_ds.c" />
     <ClCompile Include="snd_null_7.cpp" />
     <ClCompile Include="stamp.c" />
   </ItemGroup>

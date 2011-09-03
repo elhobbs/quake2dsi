@@ -1,4 +1,4 @@
-#if 0
+#if 1
 
 /*
 Copyright (C) 1997-2001 Id Software, Inc.
@@ -129,6 +129,7 @@ void S_TransferPaintBuffer(int endtime)
 		out_idx = paintedtime * dma.channels & out_mask;
 		step = 3 - dma.channels;
 
+		//printf("t: %d %d\n",count,out_idx);
 		if (dma.samplebits == 16)
 		{
 			short *out = (short *) pbuf;
@@ -155,7 +156,7 @@ void S_TransferPaintBuffer(int endtime)
 					val = 0x7fff;
 				else if (val < (short)0x8000)
 					val = (short)0x8000;
-				out[out_idx] = (val>>8) + 128;
+				out[out_idx] = (val>>8);// + 128;
 				out_idx = (out_idx + 1) & out_mask;
 			}
 		}
@@ -185,7 +186,7 @@ void S_PaintChannels(int endtime)
 
 	snd_vol = s_volume->value*256;
 
-//Com_Printf ("%i to %i\n", paintedtime, endtime);
+//printf ("%i to %i\n", paintedtime, endtime);
 	while (paintedtime < endtime)
 	{
 	// if paintbuffer is smaller than DMA buffer
@@ -213,7 +214,7 @@ void S_PaintChannels(int endtime)
 	// clear the paint buffer
 		if (s_rawend < paintedtime)
 		{
-//			Com_Printf ("clear\n");
+			//printf ("clear\n");
 			memset(paintbuffer, 0, (end - paintedtime) * sizeof(portable_samplepair_t));
 		}
 		else
@@ -228,10 +229,12 @@ void S_PaintChannels(int endtime)
 				s = i&(MAX_RAW_SAMPLES-1);
 				paintbuffer[i-paintedtime] = s_rawsamples[s];
 			}
-//		if (i != end)
-//			Com_Printf ("partial stream\n");
-//		else
-//			Com_Printf ("full stream\n");
+
+			//if (i != end)
+			//	printf ("partial stream\n");
+			//else
+			//	printf ("full stream\n");
+
 			for ( ; i<end ; i++)
 			{
 				paintbuffer[i-paintedtime].left =
@@ -331,7 +334,7 @@ void S_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int offset)
 	//as it would always be zero.
 	lscale = snd_scaletable[ ch->leftvol >> 3];
 	rscale = snd_scaletable[ ch->rightvol >> 3];
-	sfx = (signed char *)sc->data + ch->pos;
+	sfx = (unsigned char *)sc->data + ch->pos;
 
 	samp = &paintbuffer[offset];
 

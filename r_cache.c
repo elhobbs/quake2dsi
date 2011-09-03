@@ -9,6 +9,12 @@ int r_model_cache_temp = 0;
 int r_cache_count = 0;
 int r_cache_max = 0;
 
+int r_cache_fail;
+
+void r_cache_set_fail(int mode) {
+	r_cache_fail = mode == 0 ? 0 : 1;
+}
+
 void disable_keyb(void);
 void waitforit() {
 	while((keysCurrent()&KEY_A) == 0);
@@ -30,6 +36,7 @@ void r_cache_print_f(void) {
 
 int r_rache_is_empty = 0;
 void r_cache_clear() {
+	r_cache_set_fail(1);
 	r_rache_is_empty = 1;
 	disable_keyb();
 	//printf("r_cache_clear\n");
@@ -86,7 +93,9 @@ byte* r_cache_alloc(int size) {
 	if(r_model_cache_used + r_model_cache_temp + size > r_model_cache_total) {
 		register unsigned int lr_r asm ("lr");
 		unsigned int lr = lr_r;
-
+		if(r_cache_fail == 0) {
+			return 0;
+		}
 		printf("ERROR: r_cache_alloc %08X\n",lr);
 		r_cache_print(size);
 		disable_keyb();
@@ -111,6 +120,9 @@ byte* r_cache_alloc_temp(int size) {
 		register unsigned int lr_r asm ("lr");
 		unsigned int lr = lr_r;
 
+		if(r_cache_fail == 0) {
+			return 0;
+		}
 		printf("ERROR: r_cache_alloc_temp %08X\n",lr);
 		r_cache_print(size);
 		disable_keyb();

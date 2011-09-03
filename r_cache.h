@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <string.h>
 
+void r_cache_set_fail(int mode);
 void r_cache_print(int size);
 void r_cache_clear();
 void r_cache_init();
