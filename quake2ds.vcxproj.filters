@@ -353,6 +353,9 @@
     <ClCompile Include="client\keys.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="null\sys_null.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quake_ipc.h">

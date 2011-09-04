@@ -168,8 +168,14 @@ void	Sys_ConsoleOutput (char *string)
 	printf(string);
 }
 
+
+
 void Sys_SendKeyEvents (void)
 {
+void IN_Buttons();
+void IN_osk();
+	IN_Buttons();
+	IN_osk();
 }
 
 void Sys_AppActivate (void)

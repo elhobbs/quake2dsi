@@ -34,8 +34,13 @@ void r_cache_print_f(void) {
 	r_cache_print(0);
 }
 
+void S_UnloadAllSounds(void);
+void S_StopAllSounds(void);
+
 int r_rache_is_empty = 0;
 void r_cache_clear() {
+	S_StopAllSounds();
+	S_UnloadAllSounds();
 	r_cache_set_fail(1);
 	r_rache_is_empty = 1;
 	disable_keyb();

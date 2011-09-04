@@ -63,17 +63,17 @@ touchPosition	g_currentTouch = { 0,0,0,0 };
 
 void IN_Move (usercmd_t *cmd)
 {
+	static u32 keys_last;
+	u32 keys = keysCurrent();
 	int dx,dy;
-	//scanKeys();
-	if (keysDown() & KEY_TOUCH)
-	{
-		touchRead(&g_lastTouch);// = touchReadXY();
+
+	//new touch
+	if ((keys_last & KEY_TOUCH) == 0 && (keys & KEY_TOUCH) != 0) {
+		touchRead(&g_lastTouch);
 		g_lastTouch.px <<= 7;
 		g_lastTouch.py <<= 7;
-	}
-	if(keysHeld() & KEY_TOUCH)
-	{
-		touchRead(&g_currentTouch);// = touchReadXY();
+	} else if((keys_last & keys & KEY_TOUCH) != 0) {
+		touchRead(&g_currentTouch);
 		// let's use some fixed point magic to improve touch smoothing accuracy
 		g_currentTouch.px <<= 7;
 		g_currentTouch.py <<= 7;
@@ -81,57 +81,18 @@ void IN_Move (usercmd_t *cmd)
 		dx = (g_currentTouch.px - g_lastTouch.px) >> 6;
 		dy = (g_currentTouch.py - g_lastTouch.py) >> 6;
 
-		// filtering too long strokes, if needed
-		//if((dx < 30) && (dy < 30) && (dx > -30) && (dy > -30))
-		//{
-			// filter too small strokes, if needed
-			//if((dx > -2) && (dx < 2))
-			//	dx = 0;
+		if (m_pitch->value > 0)
+			cl.viewangles[PITCH] += ((dy * 2) * sensitivity->value / 11);
+		else
+			cl.viewangles[PITCH] -= ((dy * 2) * sensitivity->value / 11);
 
-			// filter too small strokes, if needed
-			//if((dy > -1) && (dy < 1))
-			//	dy = 0;
-			
-#if 1			
-			if (m_pitch->value > 0)
-				cl.viewangles[PITCH] += ((dy * 2) * sensitivity->value / 11);
-			else
-				cl.viewangles[PITCH] -= ((dy * 2) * sensitivity->value / 11);
+		cl.viewangles[YAW] -= ((dx * 2) * sensitivity->value / 11);
 
-			cl.viewangles[YAW] -= ((dx * 2) * sensitivity->value / 11);
-#else
-			dx *= sensitivity->value;
-			dy *= sensitivity->value;
-			// add mouse X/Y movement to cmd
-			if ( (in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1) ))
-				cmd->sidemove += m_side.value * dx;
-			else
-				cl.viewangles[YAW] -= m_yaw.value * dx;
-
-			//if ((in_mlook.state & 1) || !lookspring.value)
-				V_StopPitchDrift ();
-				
-			//if ( (in_mlook.state & 1) && !(in_strafe.state & 1))
-			//{
-				cl.viewangles[PITCH] += m_pitch.value * dy;
-				if (cl.viewangles[PITCH] > 80)
-					cl.viewangles[PITCH] = 80;
-				if (cl.viewangles[PITCH] < -70)
-					cl.viewangles[PITCH] = -70;
-			/*}
-			else
-			{
-				if ((in_strafe.state & 1) && noclip_anglehack)
-					cmd->upmove -= m_forward.value * dy;
-				else
-					cmd->forwardmove -= m_forward.value * dy;
-			}*/
-		//}
-#endif
 		// some simple averaging / smoothing through weightened (.5 + .5) accumulation
 		g_lastTouch.px = (g_lastTouch.px + g_currentTouch.px) / 2;
 		g_lastTouch.py = (g_lastTouch.py + g_currentTouch.py) / 2;
 	}
+	keys_last = keys;
 }
 
 #else
@@ -189,7 +150,6 @@ extern bool ipc_disabled;
 extern int doing_texture_loads;
 extern cvar_t *r_drawworld;
 
-u32 keys_last = 0;
 u32 nds_keys[] = {
 K_PAD_A,
 K_PAD_B,
@@ -204,8 +164,8 @@ K_PAD_LEFT,
 K_PAD_X,
 K_PAD_Y};
 
-void IN_Commands (void)
-{	
+void IN_Buttons() {
+	static u32 keys_last;
 	u32 key_mask=1;
 	u32 i;
 	u32 keys = keysCurrent();
@@ -221,22 +181,33 @@ void IN_Commands (void)
 		}
 	}
 	keys_last = keys;
+}
 
+void IN_osk() {
 	if (use_osk)
 	{
 		static int vkey_last = -1;
 		int vkey_press = addKeyboardEvents();
 
-		if(vkey_last >= 0 && vkey_last != vkey_press) {
+		//key down
+		if(vkey_last >= 0 && vkey_press == -1) {
 			Key_Event(vkey_last, false, Sys_Milliseconds());
+			vkey_last = -1;
 		}
 		
-		if (vkey_press >= 0)
+		//key up
+		if (vkey_last = -1 && vkey_press >= 0)
 		{
 			Key_Event(vkey_press, true, Sys_Milliseconds());
+			vkey_last = vkey_press;
 		}
-		vkey_last = vkey_press;
 	}
+}
+
+void IN_Commands (void)
+{	
+	IN_osk();
+
 	
 //	if (screen_shotting)
 //	{

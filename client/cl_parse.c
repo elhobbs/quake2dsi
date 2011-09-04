@@ -182,6 +182,9 @@ void CL_RegisterSounds (void)
 	
 //	register unsigned int lr_r asm ("lr");
 //	volatile unsigned int lr = lr_r;
+	//printf("\nCL_RegisterSounds\n");
+	//while((keysCurrent()&KEY_A) == 0);
+	//while((keysCurrent()&KEY_A) != 0);
 	
 	printf("sounds\n0%%");
 

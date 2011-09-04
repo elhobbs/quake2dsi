@@ -304,10 +304,10 @@ void CL_PrepRefresh (void)
 		
 		strcpy (name, cl.configstrings[CS_MODELS+i]);
 		name[37] = 0;	// never go beyond one line
-//		if (name[0] != '*')
-//			Com_Printf ("%s\n", name); 
-//		SCR_UpdateScreen ();
-//		Sys_SendKeyEvents ();	// pump message loop
+		if (name[0] != '*')
+			Com_Printf ("%s\n", name); 
+		SCR_UpdateScreen ();
+		Sys_SendKeyEvents ();	// pump message loop
 		if (name[0] == '#')
 		{
 			// special player weapon model
@@ -326,8 +326,8 @@ void CL_PrepRefresh (void)
 			else
 				cl.model_clip[i] = NULL;
 		}
-//		if (name[0] != '*')
-//			Com_Printf ("                                     \r");
+		if (name[0] != '*')
+			Com_Printf ("                                     \r");
 	}
 
 	Com_Printf ("\nimages\n0%%", i); 
@@ -353,7 +353,7 @@ void CL_PrepRefresh (void)
 		if (!cl.configstrings[CS_PLAYERSKINS+i][0])
 			continue;
 		Com_Printf ("client %i\n", i); 
-//		SCR_UpdateScreen ();
+		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
 		CL_ParseClientinfo (i);
 	}
@@ -362,12 +362,12 @@ void CL_PrepRefresh (void)
 
 	// set sky textures and speed
 	Com_Printf ("sky\r", i); 
-//	SCR_UpdateScreen ();
+	SCR_UpdateScreen ();
 	rotate = atof (cl.configstrings[CS_SKYROTATE]);
 	sscanf (cl.configstrings[CS_SKYAXIS], "%f %f %f", 
 		&axis[0], &axis[1], &axis[2]);
 	re.SetSky (cl.configstrings[CS_SKY], rotate, axis);
-//	Com_Printf ("                                     \r");
+	Com_Printf ("                                     \r");
 
 	// the renderer can now free unneeded stuff
 	re.EndRegistration ();
