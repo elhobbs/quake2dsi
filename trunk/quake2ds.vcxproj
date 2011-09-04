@@ -142,6 +142,7 @@
     <ClCompile Include="null\snddma_null.c" />
     <ClCompile Include="null\snd_null.c" />
     <ClCompile Include="null\swimp_null.c" />
+    <ClCompile Include="null\sys_null.c" />
     <ClCompile Include="null\vid_menu.c" />
     <ClCompile Include="null\vid_null.c" />
     <ClCompile Include="qcommon\cmd.c" />

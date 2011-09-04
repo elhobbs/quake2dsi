@@ -326,16 +326,16 @@ void get_pen_pos(short *px, short *py);
 extern bool use_osk;
 void disable_keyb(void);
 
-int addKeyboardEvents()
+int _addKeyboardEvents(int *key_index,int *held)
 {
-	//if ((keysDown() & KEY_TOUCH) == KEY_TOUCH)
-	if ((keysCurrent() & KEY_TOUCH) == KEY_TOUCH)
-	{
 		short x, y;
 		get_pen_pos(&x, &y);
 		
 		int tx = (x >> 3);
 		int ty = (y >> 3);
+
+		*key_index = 0;
+		*held = 0;
 
 		if (ty >= 12)
 		{
@@ -361,6 +361,8 @@ int addKeyboardEvents()
 				needs_refresh = true;
 				
 				keys_down = true;
+				*key_index = r;
+				*held = 1;
 				
 				if (show_mode == 0)
 				{
@@ -465,19 +467,47 @@ int addKeyboardEvents()
 					}
 			}
 		}
-	}
-	
 	return -1;
-	
-//	if (DS::getPenReleased()) {
-//		for (int r = 0; r < DS_NUM_KEYS; r++) {
-//			if (keys[r].pressed) {
-//				DS::setKeyHighlight(r, false);
-//				keys[r].pressed = false;
-//			}
-//		}
-//	}
 }
-//
-//}
-//
+
+int addKeyboardEvents()
+{
+	static int held_index = 0;
+	static int held_key = -1;
+	static u32 _keys_last;
+	u32 _keys = keysCurrent();
+
+	//key held
+	if (held_key >= 0 && (_keys_last & KEY_TOUCH) != 0 && (_keys & KEY_TOUCH) != 0) {
+		setKeyHighlight(held_index, true);
+		_keys_last = _keys;
+		return held_key;
+	}
+
+	//key up
+	if (held_key >= 0 && (_keys_last & KEY_TOUCH) != 0 && (_keys & KEY_TOUCH) == 0) {
+		setKeyHighlight(held_index, false);
+		held_key = -1;
+		held_index = 0;
+		_keys_last = _keys;
+		return -1;
+	}
+
+	//key down
+	if ((_keys_last & KEY_TOUCH) == 0 && (_keys & KEY_TOUCH) != 0)
+	{
+		int held,index;
+		int key = _addKeyboardEvents(&index,&held);
+		if(held != 0 && key >= 0) {
+			held_key = key;
+			held_index = index;
+			_keys_last = _keys;
+			return key;
+		} else {
+			held_key = -1;
+			held_index = 0;
+		}
+	}
+	_keys_last = _keys;
+	return -1;
+}

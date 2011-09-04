@@ -294,11 +294,18 @@ S_BeginRegistration
 */
 void S_BeginRegistration (void)
 {
+	s_registration_sequence++;
+	s_registering = true;
+}
+
+void S_UnloadAllSounds(void)
+{
 	int		i;
 	sfx_t	*sfx;
 
-	s_registration_sequence++;
-	s_registering = true;
+	if (!sound_started)
+		return;
+
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
 	{
 		sfx->cache = 0;
