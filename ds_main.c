@@ -1,15 +1,21 @@
+#ifdef ARM9
 #include <nds.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef ARM9
 //#include <user_debugger.h>
 #include <fat.h>
+#endif
 
 #include "null/ds.h"
 #include "memory.h"
+#ifdef ARM9
 #include "quake_ipc.h"
+#endif
 
 //#define USE_DEBUGGER
 #define USE_EXCEPTION_HANDLER
@@ -53,16 +59,20 @@ extern int show_mode;
 void enable_keyb(void)
 {
 	use_osk = true;
+#ifdef ARM9
 	videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG1_ACTIVE);
 	REG_BLDALPHA_SUB = (15 << 8) | 31;
 	bgShow(4);
+#endif
 }
 
 void disable_keyb(void)
 {
 	use_osk = false;
+#ifdef ARM9
 	videoSetModeSub(MODE_0_2D | DISPLAY_BG1_ACTIVE);
 	bgHide(4);
+#endif
 }
 
 void toggle_keyb(void)
@@ -82,7 +92,18 @@ void toggle_keyb(void)
 		enable_keyb();
 }
 
+#ifdef ARM9
 void vblank_handler(void) __attribute__ ((no_instrument_function)) __attribute__((section(".itcm"), long_call));
+#else
+void vblank_handler(void);
+#endif
+
+void mode_fifo_dma_enable();
+
+void vcount_handler(void) {
+	//printf(".");
+	mode_fifo_dma_enable();
+}
 
 void vblank_handler(void)
 {
@@ -119,14 +140,22 @@ void vblank_handler(void)
 
 void get_pen_pos(short *px, short *py)
 {
+#ifdef ARM9
 	touchPosition touchXY;
 	touchRead(&touchXY);
 	*px = touchXY.px;
 	*py = touchXY.py;
+#else
+	*px = 0;
+	*py = 0;
+#endif
 }
 
-
+#ifdef ARM9
 void hblank_handler(void) __attribute__ ((no_instrument_function)) __attribute__((section(".itcm"), long_call));
+#else
+void hblank_handler(void);
+#endif
 void hblank_handler(void)
 {
 	hblanks++;
@@ -144,15 +173,22 @@ GFX_PAL_FORMAT = addr>>(4-(format==GL_RGB4));
 }
 #endif
 
+unsigned short *ds_palette;
+#ifndef ARM9
+#define RGB8(r,g,b)  (((r)>>3)|(((g)>>3)<<5)|(((b)>>3)<<10))
+unsigned short _ds_palette[256];
+#endif
+
 void ds_loadpalette(unsigned char *palette)
 {
 	unsigned short temp_palette[256];
-	unsigned short *dest = (unsigned short *)BG_PALETTE_SUB;
 	
 	int count;
 	for (count = 0; count < 256; count++)
 		temp_palette[count] = RGB8(palette[count * 4 + 0], palette[count * 4 + 1], palette[count * 4 + 2]) | (1 << 15);
 	
+#ifdef ARM9
+	unsigned short *dest = (unsigned short *)BG_PALETTE_SUB;
 	memcpy(BG_PALETTE_SUB, temp_palette, 255 * 2);
 	dest[255] = RGB8(0, 0, 0) | (1 << 15);
 	
@@ -180,12 +216,18 @@ void ds_loadpalette(unsigned char *palette)
  		swiCopy( temp_palette, &VRAM_G[palette_address>>1] , 256 / 2 | COPY_MODE_WORD);
 	 	vramSetBankG(VRAM_G_TEX_PALETTE);
 	}
+	ds_palette = &VRAM_G[palette_address>>1];
 		
 	glColorTable(GL_RGB256, palette_address);
+#else
+	ds_palette = &_ds_palette[0];
+	memcpy(ds_palette,temp_palette,256*2);
+#endif
 }
 
 void ds_reinit_console(unsigned char *font)
 {
+#ifdef ARM9
 	printf("Changing console font\n");
 	unsigned short *ptr = (u16*)CHAR_BASE_BLOCK_SUB(0);
 	extern unsigned short *d_8to16table;
@@ -219,14 +261,19 @@ void ds_reinit_console(unsigned char *font)
 //		int tempo;
 //		for (tempo = 0; tempo < 1000000; tempo++);
 	}
+#endif
 }
 
 void *ds_get_some_vram(void)
 {
+#ifdef ARM9
 	vramSetBankE(VRAM_E_LCD);
 	vramSetBankF(VRAM_F_LCD);
 	
 	return (void *)0x6880000;
+#else
+	return malloc(80*1024);
+#endif
 }
 
 void ds_time(int *year, int *month, int *day, int *hour, int *minute, int *second)
@@ -247,7 +294,11 @@ void ds_time(int *year, int *month, int *day, int *hour, int *minute, int *secon
 	*second = timeStruct->tm_sec;
 }
 
-void handle_ipc2(fifo_msg *msg);
+#ifdef ARM9
+extern bool __dsimode;
+#endif
+
+/*void handle_ipc2(fifo_msg *msg);
 
 void fifo_DataHandler(int bytes, void *user_data) {
 //---------------------------------------------------------------------------------
@@ -256,9 +307,6 @@ void fifo_DataHandler(int bytes, void *user_data) {
 	fifoGetDatamsg(FIFO_7to9, bytes, (u8*)&msg);
 	//handle_ipc2(&msg);
 }
-#ifdef ARM9
-extern bool __dsimode;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -271,10 +319,11 @@ void systemErrorExit(int rc) {
         if (keysCurrent() & KEY_A) break;
     }
 }
-
 #ifdef __cplusplus
 };
 #endif 
+*/
+#ifdef ARM9
 int main(int argc, char **argv)
 {
 	//powerON(POWER_ALL);
@@ -364,8 +413,11 @@ int main(int argc, char **argv)
 	irqEnable(IRQ_VBLANK);
 	irqSet(IRQ_HBLANK, (void (*)())hblank_handler);
 	irqEnable(IRQ_HBLANK);
+	//SetYtrigger(200);
+	//irqSet(IRQ_VCOUNT, (void (*)())vcount_handler);
+	//irqEnable(IRQ_VCOUNT);
 
-	fifoSetDatamsgHandler(FIFO_7to9, fifo_DataHandler, 0);
+	//fifoSetDatamsgHandler(FIFO_7to9, fifo_DataHandler, 0);
 
 #ifdef IPC_IN_TIMER
 	irqSet(IRQ_TIMER0, (void (*)())handle_ipc);
@@ -577,3 +629,13 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+#else
+int main(int argc, char **argv)
+{
+	srand(0);
+	printf("entering main loop...\n");
+	quake2_main(argc, argv);
+
+	return 0;
+}
+#endif

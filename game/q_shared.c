@@ -97,7 +97,7 @@ void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 	static float		sr, sp, sy, cr, cp, cy;
 	// static to help MS compiler fp bugs
 
-#ifndef GAME_HARD_LINKED
+#ifndef ARM9 //GAME_HARD_LINKED
 	float		angle;
 	angle = angles[YAW] * (M_PI*2 / 360);
 	sy = sin(angle);
@@ -1210,7 +1210,7 @@ void Com_PageInMemory (byte *buffer, int size)
 
 // FIXME: replace all Q_stricmp with Q_strcasecmp
 #ifdef GAME_HARD_LINKED
-int Q_stricmp (char *s1, char *s2) __attribute__((section(".itcm"), long_call));
+int Q_stricmp (char *s1, char *s2) ITCM_CALL;
 #endif
 int Q_stricmp (char *s1, char *s2)
 {

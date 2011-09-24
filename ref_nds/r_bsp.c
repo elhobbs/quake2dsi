@@ -463,7 +463,7 @@ R_RecursiveWorldNode
 int perp_sides = 0;
 int angled_sides = 0;
 int clipped_faces = 0;
-bool R_RecursiveWorldNode (mnode_t *node, int clipflags) __attribute__((section(".itcm"), long_call));
+bool R_RecursiveWorldNode (mnode_t *node, int clipflags) ITCM_CALL;
 
 #if 0
 bool R_RecursiveWorldNode (mnode_t *node, int clipflags)
@@ -634,7 +634,7 @@ bool R_RecursiveWorldNode (mnode_t *node, int clipflags)
 
 #else
 
-bool world_clip(mnode_t *node, unsigned char &clip) __attribute__ ((no_instrument_function));
+bool world_clip(mnode_t *node, unsigned char &clip) ITCM_CALL;
 bool world_clip(mnode_t *node, unsigned char &clip)
 {
 	int *pindex;
@@ -823,7 +823,11 @@ bool R_RecursiveWorldNode (mnode_t *start_node, int start_clipflags)
 
 				do
 				{
+#ifdef ARM9
 					if (__builtin_expect(surf->visframe == r_framecount, 1))
+#else
+					if (surf->visframe == r_framecount)
+#endif
 					{
 						if (surf->texinfo->flags & ( SURF_TRANS66 | SURF_TRANS33 ))
 						{
@@ -964,8 +968,8 @@ void R_RenderWorld (void)
 	
 	head_alpha_surf = NULL;
 	
-	if (use_arm7_bsp == false)
-	{
+	//if (use_arm7_bsp == false)
+	//{
 		if ((currentmodel->nodes->contents != CONTENTS_SOLID) && (currentmodel->nodes->visframe == r_visframecount))
 			R_RecursiveWorldNode (currentmodel->nodes, 15);
 		
@@ -976,7 +980,7 @@ void R_RenderWorld (void)
 			head_alpha_surf = head_alpha_surf->nextalphasurface;
 		}
 		ds_polyfmt(0, 31, 0, POLY_CULL_NONE);
-	}
+	/*}
 	else
 	{
 		ds_setup_bsp_render((void *)currentmodel, view_clipplanes, r_framecount, r_visframecount, r_newrefdef.areabits, pfrustum_indexes, fp_modelorg, (unsigned int *)&head_alpha_surf);
@@ -986,7 +990,7 @@ void R_RenderWorld (void)
 			R_RenderPoly(head_alpha_surf);
 			head_alpha_surf = head_alpha_surf->nextalphasurface;
 		}
-	}
+	}*/
 	
 //	printf("%08x\n", render_flags & ~SURF_SKY);
 	

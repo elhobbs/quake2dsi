@@ -1,10 +1,14 @@
+#ifdef ARM9
 #include <nds.h>
 //#include <user_debugger.h>
+#endif
 
 #include "null/ds.h"
 #include "memory.h"
 
+#ifdef ARM9
 #include "quake_ipc.h"
+#endif
 
 #ifdef R21
 void glReset(void) {	
@@ -67,7 +71,11 @@ int base_polyid = 0;
 #define GL_RDLINE_UNDERFLOW   (1<<12) 
 #define GL_VERTEX_OVERFLOW    (1<<13) 
 
+#ifdef ARM9
 void glFogDepth(uint16 depth) { GFX_FOG_OFFSET = depth; }
+#else
+#define  glFogDepth(_x)
+#endif
 
 int use_fog = 1;
 int fog_depth = 0x7ea0;
@@ -88,7 +96,9 @@ extern unsigned short current_bound;
 void ds_reset_render(void)
 {
 	extern unsigned int super_framecount;
+#ifdef ARM9
 	glReset();
+#endif
 	super_framecount++;
 }
 
@@ -97,6 +107,7 @@ void next_triz(void);
 
 void ds_begin_render(void)
 {
+#ifdef ARM9
 	glMatrixMode(GL_PROJECTION);
 	
 	ds_ortho();
@@ -136,6 +147,7 @@ void ds_begin_render(void)
 	glScalef(ox_scale, oy_scale, oz_scale); 
 	
 	glEnable(GL_ANTIALIAS);
+#endif
 	
 	reset_triz();
 	
@@ -147,6 +159,7 @@ int doing_texture_loads = 1;
 
 void ds_end_render(void)
 {
+#ifdef ARM9
 //	printf("%d polys, %d verts\n", GFX_POLYGON_RAM_USAGE, GFX_VERTEX_RAM_USAGE);
 	unsigned short *text_map = (unsigned short *)SCREEN_BASE_BLOCK_SUB(9);
 	if (GFX_VERTEX_RAM_USAGE >= 6144)
@@ -173,6 +186,7 @@ void ds_end_render(void)
 	GFX_FLUSH = 0;
 #endif
 	
+#endif
 //	GFX_FLUSH = flush_val;
 	
 //	unload_textures_2();
@@ -181,6 +195,7 @@ void ds_end_render(void)
 
 void ds_ortho(void)
 {
+#ifdef ARM9
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	//glOrtho(-110, 110, -80, 80, 1.0f, 0x7fff);
@@ -189,10 +204,12 @@ void ds_ortho(void)
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
+#endif
 }
 
 void ds_perspective(void)
 {
+#ifdef ARM9
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 #ifdef R21
@@ -209,10 +226,12 @@ void ds_perspective(void)
 	glLoadIdentity();
 	glTranslatef(left_move, up_move, z_move);
 	glScalef(x_scale, y_scale, z_scale);
+#endif
 }
 
 void ds_polyfmt(int poly_id, int trans, int depth, int culling)
 {
+#ifdef ARM9
 	if (use_wireframe)
 	{
 		int p = (base_polyid++) & 0x1f;
@@ -220,50 +239,68 @@ void ds_polyfmt(int poly_id, int trans, int depth, int culling)
 	}
 	else
 		glPolyFmt(POLY_ALPHA(trans) | POLY_FOG | culling | POLY_ID(poly_id) | (depth << 14) | BIT(12) | BIT(13));
+#endif
 }
 
 void ds_vertex3f(float x, float y, float z)
 {
+#ifdef ARM9
 	glVertex3f(x, y, z);
+#endif
 }
 
 void ds_pushmatrix(void)
 {
+#ifdef ARM9
 	glPushMatrix();
+#endif
 }
 
 void ds_popmatrix(void)
 {
+#ifdef ARM9
 	glPopMatrix(1);
+#endif
 }
 
 void ds_translatef(float x, float y, float z)
 {
+#ifdef ARM9
 	glTranslatef(x, y, z);
+#endif
 }
 
 void ds_scalef(float x, float y, float z)
 {
+#ifdef ARM9
 	glScalef(x, y, z);
+#endif
 }
 
 void ds_rotateX(float angle)
 {
+#ifdef ARM9
 	glRotateX(angle);
+#endif
 }
 
 void ds_rotateY(float angle)
 {
+#ifdef ARM9
 	glRotateY(angle);
+#endif
 }
 
 void ds_rotateZ(float angle)
 {
+#ifdef ARM9
 	glRotateZ(angle);
+#endif
 }
 
 int ds_gentexture(void)
 {
+#ifdef ARM9
 	int temp_texture;
 	if (glGenTextures(1, &temp_texture) == 0)
 	{
@@ -271,18 +308,24 @@ int ds_gentexture(void)
 		while(1);
 	}
 	return temp_texture;
+#else
+	return 0;
+#endif
 }
 
 void ds_get_geometry_count(unsigned int *verts, unsigned int *polys)
 {
+#ifdef ARM9
 	if (verts)
 		*verts = GFX_VERTEX_RAM_USAGE;
 	if (polys)
 		*polys = GFX_POLYGON_RAM_USAGE;
+#endif
 }
 
 int ds_boxtest(short x, short y, short z, short height, short width, short depth)
 {
+#ifdef ARM9
 	GFX_BOX_TEST = VERTEX_PACK(x, y);
 	GFX_BOX_TEST = VERTEX_PACK(z, height);
 	GFX_BOX_TEST = VERTEX_PACK(width, depth);
@@ -290,10 +333,14 @@ int ds_boxtest(short x, short y, short z, short height, short width, short depth
 	while(GFX_STATUS & BIT(0));
 
 	return (GFX_STATUS & BIT(1));
+#else
+	return 0;
+#endif
 }
 
 void ds_mulmatf(float m[3][4])
 {
+#ifdef ARM9
 	m4x4 mat_fp;
 	int x, y;
 	
@@ -318,11 +365,13 @@ void ds_mulmatf(float m[3][4])
 //				(float)mat_fp.m[y * 4 + 2] / 4096,
 //				(float)mat_fp.m[y * 4 + 3] / 4096);
 	glMultMatrix4x4(&mat_fp);
+#endif
 }
 
 #ifndef R21
 unsigned short *ds_screen_capture(void)
 {
+#ifdef ARM9
 	vramSetBankD(VRAM_D_LCD); 
 
 	DISP_CAPTURE = DCAP_ENABLE | //enables display capturing 
@@ -331,11 +380,16 @@ unsigned short *ds_screen_capture(void)
 	DCAP_SRC(1); //capture source - not sure what this does
 	
 	return (unsigned short *)0x6860000;
+#else
+	return 0;
+#endif
 }
 #endif
 
+#if 0
 void ds_setup_bsp_render(void *model, void *clipplanes, int frc, int vfrc, byte *areab, int **pfri, int *modelo, unsigned int *head_surf)
 {
+#ifdef ARM9
 	fifo_msg msg;
 	//ipc_block_ready_9to7();
 	
@@ -355,4 +409,6 @@ void ds_setup_bsp_render(void *model, void *clipplanes, int frc, int vfrc, byte 
 	//ipc_set_ready_9to7();
 	//ipc_block_ready_9to7();
 	sysSetCartOwner(BUS_OWNER_ARM9);
+#endif
 }
+#endif

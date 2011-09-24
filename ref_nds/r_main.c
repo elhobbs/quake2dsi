@@ -534,6 +534,8 @@ void R_DrawNullModel( void )
 {
 }
 
+void Mod_touchAlias(model_t *mod);
+
 /*
 =============
 R_DrawEntitiesOnList
@@ -547,6 +549,16 @@ void R_DrawEntitiesOnList (void)
 
 //	if (!r_drawentities->value)
 //		return;
+	//where to do this????
+	//touch all alias models that are needed this frame
+	//this should prevent them from being unloaded to make space
+	for (i=0 ; i<r_newrefdef.num_entities ; i++)
+	{
+		currententity = &r_newrefdef.entities[i];
+		if(currententity->model && currententity->model->type == mod_alias) {
+			Mod_touchAlias(currententity->model);
+		}
+	}
 
 	// all bmodels have already been drawn by the edge list
 	for (i=0 ; i<r_newrefdef.num_entities ; i++)
@@ -1387,7 +1399,7 @@ void Draw_BuildGammaTable (void)
 	
 	for (i=0 ; i<256 ; i++)
 	{
-		inf = (int)(255 * pow ( (i+0.5)/255.5 , g ) + 0.5);
+		inf = (int)(255 * pow ((float) ((i+0.5)/255.5) , g ) + 0.5);
 		if (inf < 0)
 			inf = 0;
 		if (inf > 255)

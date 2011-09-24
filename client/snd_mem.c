@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int			cache_full_cycle;
 
 byte *S_Alloc (int size);
+extern hunk_t ds_snd_cache;
+extern int		r_framecount;	// so frame counts initialized to 0 don't match
 
 /*
 ================
@@ -43,7 +45,9 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 	int		sample, samplefrac, fracstep;
 	sfxcache_t	*sc;
 	
-	sc = sfx->cache;
+	if(sfx->extradata == 0)
+		return;
+	sc = (sfxcache_t*)sfx->extradata;
 	if (!sc)
 		return;
 
@@ -94,6 +98,11 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 
 //=============================================================================
 
+extern int file_from_pak;
+extern FILE* g_pack_file;
+extern int g_pack_file_pos;
+extern int g_pack_file_len;
+
 /*
 ==============
 S_LoadSound
@@ -109,14 +118,23 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	sfxcache_t	*sc;
 	int		size;
 	char	*name;
+	int		close_file = 0;
+	extern int s_in_precache;
+
+	if(r_rache_is_empty) {
+		return NULL;
+	}
 
 	if (s->name[0] == '*')
 		return NULL;
 
-// see if still in memory
-	sc = s->cache;
+	sc = (sfxcache_t *)Cache_Check (&ds_snd_cache,&(s->extradata));
 	if (sc)
 		return sc;
+
+	if(s_in_precache == 0) {
+		s_in_precache = 0;
+	}
 
 //Com_Printf ("S_LoadSound: %x\n", (int)stackbuf);
 // load it in
@@ -130,11 +148,17 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	else
 		Com_sprintf (namebuffer, sizeof(namebuffer), "sound/%s", name);
 
-	printf ("loading %s\n",namebuffer);
+	printf ("%s\n",namebuffer);
 
-	//size = FS_LoadFile (namebuffer, (void **)&data);
-	FILE *h;
-	size = FS_FOpenFile (namebuffer, &h);
+	FILE *h = (FILE *)s->handle;
+	size = s->len;
+	if(h == 0) {
+		close_file = 1;
+		//size = FS_LoadFile (namebuffer, (void **)&data);
+		size = FS_FOpenFile (namebuffer, &h);
+	} else {
+		ds_fseek (h, s->pos, SEEK_SET);
+	}
 	if (!h) {
 		printf ("Couldn't load %s\n", namebuffer);
 		return NULL;
@@ -144,12 +168,19 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	if (!data)
 	{
 		r_cache_set_fail(1);
-		ds_fclose (h);
+		if(close_file) {
+			ds_fclose (h);
+		}
 		printf ("Couldn't load %s\n", namebuffer);
 		return NULL;
 	}
 	FS_Read (data, size, h);
-	ds_fclose (h);
+	if(close_file) {
+		ds_fclose (h);
+		s->handle = g_pack_file;
+		s->pos = g_pack_file_pos;
+		s->len = g_pack_file_len;
+	}
 
 	info = GetWavinfo (s->name, data, size);
 	if (info.channels != 1)
@@ -175,7 +206,21 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	//we are forcing 8 bit sound
 	//len = len * info.width * info.channels;
 
-	sc = s->cache = (sfxcache_t *)Hunk_Alloc (len + sizeof(sfxcache_t) + 4);//pad by 4 just to be certain - too lazy to check
+	Cache_Alloc(&ds_snd_cache,(cache_user_t *)&(s->extradata),len + sizeof(sfxcache_t) + 4,s->name);
+
+	/*cached_t *ds = DS_CacheAlloc(&ds_snd_cache,len + sizeof(sfxcache_t) + 4);
+	if(!ds) {
+		r_cache_set_fail(1);
+		//FS_FreeFile (data);
+		Z_Free(data);
+		return NULL;
+	}
+	ds->owner = (cached_t **)&s->cache;
+	ds->visframe = r_framecount;
+	sc = s->cache = (sfxcache_t *)(ds+1);
+	*/
+	//sc = s->cache = (sfxcache_t *)Hunk_Alloc (len + sizeof(sfxcache_t) + 4);//pad by 4 just to be certain - too lazy to check
+	sc = (sfxcache_t *)s->extradata;
 	if (!sc)
 	{
 		r_cache_set_fail(1);

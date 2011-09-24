@@ -35,12 +35,16 @@ qboolean SNDDMA_Init(void)
 	dma.samplebits = 8;
 	dma.speed = 11025;
 
+#ifdef ARM9
 	dma.buffer = (byte *)memUncached(dma_buffer);
+#else
+	dma.buffer = dma_buffer;
+#endif
     dma.samples = sizeof(dma_buffer)/(dma.samplebits/8);
     dma.submission_chunk = 1;
 
     dma.samplepos = 0;
-
+#ifdef ARM9
 	soundEnable();
 	memset(dma.buffer,0,QSND_BUFFER_SIZE);
 	dma.buffer[4] = dma.buffer[5] = 0x7f;	// force a pop for debugging
@@ -60,12 +64,14 @@ qboolean SNDDMA_Init(void)
 	TIMER_CR(1) = TIMER_ENABLE | TIMER_CASCADE | TIMER_DIV_1;
 	TIMER_DATA(2) = 0;
 	TIMER_CR(2) = TIMER_ENABLE | TIMER_CASCADE | TIMER_DIV_1;
+#endif
 
 	return true;
 }
 
 long long ds_time()
 {
+#ifdef ARM9
 	static u16 last;
 	static long long t;
 	u16 time1 = TIMER1_DATA;
@@ -75,6 +81,9 @@ long long ds_time()
 	}
 	last = time;
 	return (t + (time << 16) + time1);
+#else
+	return 0;
+#endif
 }
 
 /*

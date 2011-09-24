@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#ifdef ARM9
 #include <nds.h>
+#endif
 #include "null/ds.h"
 #include "memory.h"
+#ifdef ARM9
 #include "ram.h"
+#endif
 
 #ifdef R21
 #define REG_EXEMEMCNT REG_EXMEMCNT
@@ -17,11 +22,14 @@ extern bool __dsimode;
 
 void ds_set_exram_timings(unsigned int first, unsigned int second)
 {
+#ifdef ARM9
 	REG_EXEMEMCNT = REG_EXEMEMCNT | (first << 2) | (second << 4);
+#endif
 }
 
 void ds_exram_cache_enable(void)
 {
+#ifdef ARM9
 	return;
 	DC_FlushAll();
 	
@@ -29,10 +37,12 @@ void ds_exram_cache_enable(void)
 		"ldr	r0,=0b01001010\n"
 		"mcr	p15, 0, r0, c2, c0, 0\n"
 		"mcr	p15, 0, r0, c2, c0, 1\n");
+#endif
 }
 
 void ds_exram_cache_disable(void)
 {
+#ifdef ARM9
 	return;
 	DC_FlushAll();
 	
@@ -40,12 +50,14 @@ void ds_exram_cache_disable(void)
 		"ldr	r0,=0b01000010\n"
 		"mcr	p15, 0, r0, c2, c0, 0\n"
 		"mcr	p15, 0, r0, c2, c0, 1\n");
+#endif
 }
 
 unsigned short *memory_base = 0x0;
 unsigned int memory_base_len = 0;
 void enable_memory(int type)
 {
+#ifdef ARM9
 	if (memory_base == 0x0)
 	{
 		if(__dsimode) {
@@ -65,14 +77,17 @@ void enable_memory(int type)
 	}
 		
 	ds_exram_cache_enable();
+#endif
 }
 
 void disable_memory(void)
 {
+#ifdef ARM9
 	ds_exram_cache_disable();
 	if(!__dsimode) {
 		ram_lock();
 	}
+#endif
 }
 
 int mode = 1;
@@ -80,8 +95,12 @@ void ram_mode(void)
 {
 	if (mode == 1)
 	{
+#ifdef ARM9
 		register unsigned int lr_r asm ("lr");
 		unsigned int lr = lr_r;
+#else
+		unsigned int lr = 0;
+#endif
 		printf("already in RAM mode, %08x\n", lr);
 		while(1);
 	}
@@ -94,16 +113,21 @@ void disk_mode(void)
 {
 	if (mode == 0)
 	{
+#ifdef ARM9
 		register unsigned int lr_r asm ("lr");
 		unsigned int lr = lr_r;
+#else
+		unsigned int lr = 0;
+#endif
 		printf("already in disk mode, %08x\n", lr);
 		while(1);
 	}
 	mode = 0;
-	
+#ifdef ARM9
 	if(!__dsimode) {
 		disable_memory();
 	}
+#endif
 }
 
 void check_mode(void)
@@ -127,6 +151,7 @@ void *get_memory_base_end(void)
 
 unsigned int get_memory_size(void)
 {
+#ifdef ARM9
 	volatile unsigned short *ptr = (unsigned short *)get_memory_base();
 	unsigned int count = 0;
 	volatile unsigned short read_back = 0;
@@ -148,10 +173,14 @@ unsigned int get_memory_size(void)
 	memory_base_len = (count - 1) * 2;
 	
 	return (count - 1) * 2;
+#else
+	return 0;
+#endif
 }
 
 unsigned int find_memory_size(void)
 {
+#ifdef ARM9
 	volatile unsigned short *ptr = (volatile unsigned short *)get_memory_base();
 	unsigned int count = 0;
 	volatile unsigned short read_back = 0;
@@ -179,6 +208,9 @@ unsigned int find_memory_size(void)
 	
 	memory_base_len = (count - 8) * 2;
 	return (count - 8) * 2;
+#else
+	return 0;
+#endif
 }
 
 void ds_memset(void *addr, unsigned char value, unsigned int length)
@@ -382,6 +414,7 @@ int count_largest_extra_block_mb(void)
 
 void print_top_four_blocks_kb(void)
 {
+#ifdef ARM9
 	void *l1, *l2, *l3, *l4;
 	
 	printf("big free blocks, kb:\n");
@@ -407,6 +440,7 @@ void print_top_four_blocks_kb(void)
 	free(l4);
 	
 	printf("done\n");
+#endif
 }
 
 void print_top_four_blocks(void)

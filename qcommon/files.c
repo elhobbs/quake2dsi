@@ -204,6 +204,10 @@ a seperate file.
 ===========
 */
 int file_from_pak = 0;
+FILE* g_pack_file;
+int g_pack_file_pos;
+int g_pack_file_len;
+
 #ifndef NO_ADDONS
 int FS_FOpenFile (char *filename, FILE **file)
 {
@@ -214,6 +218,9 @@ int FS_FOpenFile (char *filename, FILE **file)
 	filelink_t		*link;
 
 	file_from_pak = 0;
+	g_pack_file = 0;
+	g_pack_file_pos = 0;
+	g_pack_file_len = 0;
 
 	// check for links first
 //	for (link = fs_links ; link ; link=link->next)
@@ -245,6 +252,9 @@ int FS_FOpenFile (char *filename, FILE **file)
 				if (!Q_strcasecmp (pak->files[i].name, filename))
 				{	// found it!
 					file_from_pak = 1;
+					g_pack_file = pak->handle;
+					g_pack_file_pos = pak->files[i].filepos;
+					g_pack_file_len = pak->files[i].filelen;
 //					Com_DPrintf ("PackFile: %s : %s\n",pak->filename, filename);
 				// open a new file on the pakfile
 					*file = ds_fopen (pak->filename, "rb");

@@ -44,17 +44,25 @@ int set_sky_not_loading(void);
 void get_pen_pos(short *px, short *py);
 void ds_time(int *year, int *month, int *day, int *hour, int *minute, int *second);
 
+#ifdef _WIN32
+__forceinline void byte_write(void *ptr, unsigned char value) {
+	*((unsigned char *)ptr) = value;
+}
+#define ITCM_CALL
+#endif
+
 #ifdef ARM9
+#define ITCM_CALL __attribute__((section(".itcm"), long_call))
+#endif
 
-void init_arm7(void);
-//void ipc_block_ready_9to7(void) __attribute__((section(".itcm"), long_call));
-//bool ipc_test_ready_9to7(void) __attribute__((section(".itcm"), long_call));
-//void ipc_set_ready_9to7(void) __attribute__((section(".itcm"), long_call));
-//void ipc_block_ready_7to9(void) __attribute__((section(".itcm"), long_call));
+//void ipc_block_ready_9to7(void) ITCM_CALL;
+//bool ipc_test_ready_9to7(void) ITCM_CALL;
+//void ipc_set_ready_9to7(void) ITCM_CALL;
+//void ipc_block_ready_7to9(void) ITCM_CALL;
 
-void handle_ipc(void) __attribute__((section(".itcm"), long_call));
-unsigned char *S_LoadSoundFile(char *name, unsigned int *file_len) __attribute__((section(".itcm"), long_call));
-void S_FreeSoundFile(void *data) __attribute__((section(".itcm"), long_call));
+void handle_ipc(void) ITCM_CALL;
+unsigned char *S_LoadSoundFile(char *name, unsigned int *file_len) ITCM_CALL;
+void S_FreeSoundFile(void *data) ITCM_CALL;
 void S_FreeMarkedSounds(void);
 
 #define MEM_MAIN 1
@@ -64,37 +72,13 @@ void *ds_malloc(unsigned int size);
 void *ds_realloc(void *ptr, size_t size);
 void ds_free(void *ptr);
 
-static inline void byte_write(void *ptr, unsigned char value) __attribute__ ((no_instrument_function));
 
-static inline void byte_write(void *ptr, unsigned char value)
-{
-	unsigned int aligned_addr = ((unsigned int)ptr) & 0xfffffffe;
-	unsigned short existing = *(unsigned short *)aligned_addr;
-	
-	unsigned short result;
-	
-	unsigned short is_lower = (unsigned int)ptr & 0x1;
-	unsigned short value_shift = is_lower << 3;
-	
-	unsigned short shifted_value = value << value_shift;
-	unsigned short existing_masked = existing & (0xff00 >> value_shift);
-	
-	result = shifted_value | existing_masked;
-	
-//	if ((((unsigned int)ptr) & 0x1) == 0)
-//		result = (existing & 0xff00) | value;
-//	else
-//		result = (value << 8) | (existing & 0xff);
-	
-	*(unsigned short *)aligned_addr = result;
-}
-
-void ds_memset(void *addr, unsigned char value, unsigned int length) __attribute__((section(".itcm"), long_call));
-void ds_memset_basic(void *addr, unsigned char value, unsigned int length) __attribute__((section(".itcm"), long_call));
-void ds_memcpy(void *dest, void *source, unsigned int length) __attribute__((section(".itcm"), long_call));
-void ds_memcpy_basic(void *dest, void *source, unsigned int length) __attribute__((section(".itcm"), long_call));
+void ds_memset(void *addr, unsigned char value, unsigned int length) ITCM_CALL;
+void ds_memset_basic(void *addr, unsigned char value, unsigned int length) ITCM_CALL;
+void ds_memcpy(void *dest, void *source, unsigned int length) ITCM_CALL;
+void ds_memcpy_basic(void *dest, void *source, unsigned int length) ITCM_CALL;
 //void byte_write(void *addr, unsigned char value) __attribute__ ((no_instrument_function));
-void ds_strcpy (char *dest, char *src) __attribute__((section(".itcm"), long_call));
+void ds_strcpy (char *dest, char *src) ITCM_CALL;
 
 struct ds_file
 {
@@ -149,22 +133,22 @@ void ds_reset_render(void);
 
 void init_textures(void);
 void vram_init(void);
-void *vram_malloc(unsigned int size)  __attribute__((section(".itcm"), long_call));
-unsigned int vram_get_free_size(void) __attribute__((section(".itcm"), long_call));
-void vram_free(void *ptr) __attribute__((section(".itcm"), long_call));
-void copy_into_vram(unsigned int *dest, unsigned char *src, int size, int rows, int cols, int realX) __attribute__((section(".itcm"), long_call));
-int tex_size(int size) __attribute__((section(".itcm"), long_call));
-void ds_lock_vram(void) __attribute__((section(".itcm"), long_call));
-void ds_unlock_vram(void) __attribute__((section(".itcm"), long_call));
-int next_size_up(int size) __attribute__((section(".itcm"), long_call));
-bool bind_texture(int id) __attribute__((section(".itcm"), long_call));
-bool free_lru(int min_time) __attribute__((section(".itcm"), long_call));
-void load_textures(void) __attribute__((section(".itcm"), long_call));
-bool load_texture(int id) __attribute__((section(".itcm"), long_call));
-void *get_texture_address(int id) __attribute__((section(".itcm"), long_call));
+void *vram_malloc(unsigned int size)  ITCM_CALL;
+unsigned int vram_get_free_size(void) ITCM_CALL;
+void vram_free(void *ptr) ITCM_CALL;
+void copy_into_vram(unsigned int *dest, unsigned char *src, int size, int rows, int cols, int realX) ITCM_CALL;
+int tex_size(int size) ITCM_CALL;
+void ds_lock_vram(void) ITCM_CALL;
+void ds_unlock_vram(void) ITCM_CALL;
+int next_size_up(int size) ITCM_CALL;
+bool bind_texture(int id) ITCM_CALL;
+bool free_lru(int min_time) ITCM_CALL;
+void load_textures(void) ITCM_CALL;
+bool load_texture(int id) ITCM_CALL;
+void *get_texture_address(int id) ITCM_CALL;
 void get_texture_sizes(int handle, int *w, int *h, int *big_w, int *big_h);
-void ds_resize_in_place(int sizeX, int sizeY, unsigned char *image) __attribute__((section(".itcm"), long_call));
-int ds_teximage2d(int sizeX, int sizeY, unsigned char* texture, bool transparency, int transparent_colour) __attribute__((section(".itcm"), long_call));
+void ds_resize_in_place(int sizeX, int sizeY, unsigned char *image) ITCM_CALL;
+int ds_teximage2d(int sizeX, int sizeY, unsigned char* texture, bool transparency, int transparent_colour) ITCM_CALL;
 void dump_texture_state(void);
 void verify_textures(void);
 
@@ -174,7 +158,7 @@ void release_texture(int handle);
 
 unsigned int glTexImage2DQuake(int target, int empty1, int type, int sizeX, int sizeY, int empty2, int param, unsigned char* texture,
 	unsigned int rows, unsigned int cols, unsigned int realY, unsigned int realX)
-		__attribute__((section(".itcm"), long_call));
+		ITCM_CALL;
 
 void ds_reinit_console(unsigned char *font);
 void ds_loadpalette(unsigned char *palette);
@@ -183,27 +167,55 @@ void toggle_keyb(void);
 
 void ds_ortho(void);
 void ds_perspective(void);
-void ds_polyfmt(int poly_id, int trans, int depth, int culling) __attribute__((section(".itcm"), long_call));
+void ds_polyfmt(int poly_id, int trans, int depth, int culling) ITCM_CALL;
 void ds_set_fog(int shift, int depth);
 
-void ds_pushmatrix(void) __attribute__((section(".itcm"), long_call));
-void ds_popmatrix(void) __attribute__((section(".itcm"), long_call));
-void ds_translatef(float x, float y, float z) __attribute__((section(".itcm"), long_call));
-void ds_scalef(float x, float y, float z) __attribute__((section(".itcm"), long_call));
-void ds_rotateX(float angle) __attribute__((section(".itcm"), long_call));
-void ds_rotateY(float angle) __attribute__((section(".itcm"), long_call));
-void ds_rotateZ(float angle) __attribute__((section(".itcm"), long_call));
+void ds_pushmatrix(void) ITCM_CALL;
+void ds_popmatrix(void) ITCM_CALL;
+void ds_translatef(float x, float y, float z) ITCM_CALL;
+void ds_scalef(float x, float y, float z) ITCM_CALL;
+void ds_rotateX(float angle) ITCM_CALL;
+void ds_rotateY(float angle) ITCM_CALL;
+void ds_rotateZ(float angle) ITCM_CALL;
 
-void ds_mulmatf(float m[3][4]) __attribute__((section(".itcm"), long_call));
+void ds_mulmatf(float m[3][4]) ITCM_CALL;
 
 void ds_vertex3f(float x, float y, float z);
 
 int ds_gentexture(void);
 
 void ds_get_geometry_count(unsigned int *verts, unsigned int *polys);
-int ds_boxtest(short x, short y, short z, short height, short width, short depth) __attribute__((section(".itcm"), long_call));
+int ds_boxtest(short x, short y, short z, short height, short width, short depth) ITCM_CALL;
 unsigned short *ds_screen_capture(void);
 void ds_setup_bsp_render(void *model, void *clipplanes, int frc, int vfrc, unsigned char *areab, int **pfri, int *modelo, unsigned int *head_surf);
+#ifdef ARM9
+static inline void byte_write(void *ptr, unsigned char value) __attribute__ ((no_instrument_function));
+
+static inline void byte_write(void *ptr, unsigned char value)
+{
+	unsigned int aligned_addr = ((unsigned int)ptr) & 0xfffffffe;
+	unsigned short existing = *(unsigned short *)aligned_addr;
+	
+	unsigned short result;
+	
+	unsigned short is_lower = (unsigned int)ptr & 0x1;
+	unsigned short value_shift = is_lower << 3;
+	
+	unsigned short shifted_value = value << value_shift;
+	unsigned short existing_masked = existing & (0xff00 >> value_shift);
+	
+	result = shifted_value | existing_masked;
+	
+//	if ((((unsigned int)ptr) & 0x1) == 0)
+//		result = (existing & 0xff00) | value;
+//	else
+//		result = (value << 8) | (existing & 0xff);
+	
+	*(unsigned short *)aligned_addr = result;
+}
+void init_arm7(void);
+
+
 
 #ifndef NDS_INCLUDE
 #define NDS_INCLUDE		//to prevent re-defines
@@ -216,6 +228,7 @@ void ds_setup_bsp_render(void *model, void *clipplanes, int frc, int vfrc, unsig
 
 #endif
 
+
 #define PACK_TEXTURE(u,v)    (((u) << 16) | ((v) & 0xFFFF))
 
 #define DS_COLOUR3B(red, green, blue) GFX_COLOR = (volatile unsigned int)RGB15(red>>3, green>>3, blue>>3)
@@ -225,6 +238,27 @@ void ds_setup_bsp_render(void *model, void *clipplanes, int frc, int vfrc, unsig
 #define DS_BEGIN_QUAD() GFX_BEGIN = 1
 #define DS_BEGIN_TRIANGLE_STRIP() GFX_BEGIN = 2
 
+#endif
+
+#ifdef _WIN32
+#define PACK_TEXTURE(u,v)
+
+#define DS_COLOUR3B(red, green, blue)
+#define DS_TEXCOORD2T16(x, y)
+#define DS_VERTEX3V16(x, y, z)
+#define DS_BEGIN_TRIANGLE()
+#define DS_BEGIN_QUAD()
+#define DS_BEGIN_TRIANGLE_STRIP()
+
+#define POLY_CULL_NONE 0
+#define POLY_CULL_FRONT 1
+#define POLY_CULL_BACK 2
+#define v16 short
+#define floattov16(n)        ((v16)((n) * (1 << 12))) /*!< \brief convert float to v16 */
+#define u8 unsigned char
+#define uint32 unsigned int
+#define uint8 unsigned char
+#define u16 unsigned short
 #endif
 
 extern volatile unsigned int hblanks;

@@ -636,12 +636,23 @@ int			CM_HeadnodeForBox (vec3_t mins, vec3_t maxs);
 
 
 // returns an ORed contents mask
+#ifdef _WIN32
+int			CM_PointContents (vec3_t p, int headnode);
+#else
 int			CM_PointContents (vec3_t p, int headnode) __attribute__((section(".itcm"), long_call));;
+#endif
+
 int			CM_TransformedPointContents (vec3_t p, int headnode, vec3_t origin, vec3_t angles);
 
+#ifdef ARM9
 trace_t		CM_BoxTrace (vec3_t start, vec3_t end,
 						  vec3_t mins, vec3_t maxs,
 						  int headnode, int brushmask) __attribute__((section(".itcm"), long_call));;
+#else
+trace_t		CM_BoxTrace (vec3_t start, vec3_t end,
+						  vec3_t mins, vec3_t maxs,
+						  int headnode, int brushmask);
+#endif
 trace_t		CM_TransformedBoxTrace (vec3_t start, vec3_t end,
 						  vec3_t mins, vec3_t maxs,
 						  int headnode, int brushmask,

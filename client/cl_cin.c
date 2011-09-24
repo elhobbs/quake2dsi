@@ -20,12 +20,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "../null/ds.h"
 
-#define CIN_FRAME_RATE	14.0f
+volatile int dma_screen = 0;
+volatile int mode_fifo_on = 0;
+unsigned short *dma_scr_buffer;
+unsigned short *dma_palette;
+unsigned short *ds_screen[2];
+byte* r_cache_alloc(int size);
+byte *compressed;
 
-void D_DrawQuad(int u, int v, int iz, float s, float t,
-	int u2, int v2, int iz2, float s2, float t2,
-	int u3, int v3, int iz3, float s3, float t3,
-	int u4, int v4, int iz4, float s4, float t4, int texture_handle);
+#ifndef ARM9
+#define RGB8(r,g,b)  (((r)>>3)|(((g)>>3)<<5)|(((b)>>3)<<10))
+#endif
 
 
 typedef struct
@@ -55,7 +60,6 @@ typedef struct
 } cinematics_t;
 
 cinematics_t	cin;
-int cinematic_texture_handle = -1;
 
 /*
 =================================================================
@@ -79,8 +83,6 @@ void SCR_LoadPCX (char *filename, byte **pic, byte **palette, int *width, int *h
 	int		len;
 	int		dataByte, runLength;
 	byte	*out, *pix;
-	
-	printf("load pcx\n");
 
 	*pic = NULL;
 
@@ -184,7 +186,6 @@ void SCR_StopCinematic (void)
 	{
 		ds_fclose (cl.cinematic_file);
 		cl.cinematic_file = NULL;
-		cl.cinematic_file = NULL;
 	}
 	if (cin.hnodes1)
 	{
@@ -199,7 +200,6 @@ void SCR_StopCinematic (void)
 		CL_Snd_Restart_f ();
 	}
 
-//	printf("stopping cinematic\n");
 }
 
 /*
@@ -265,19 +265,14 @@ void Huff1TableInit (void)
 	int		*node, *nodebase;
 	byte	counts[256];
 	int		numhnodes;
-	
-	printf("huff table init\n");
 
-	ds_set_malloc_base(MEM_XTRA);
 	cin.hnodes1 = (int *)Z_Malloc (256*256*2*4);
-	ds_set_malloc_base(MEM_MAIN);
-	
-	ds_memset (cin.hnodes1, 0, 256*256*2*4);
+	memset (cin.hnodes1, 0, 256*256*2*4);
 
 	for (prev=0 ; prev<256 ; prev++)
 	{
-		ds_memset (cin.h_count,0,sizeof(cin.h_count));
-		ds_memset (cin.h_used,0,sizeof(cin.h_used));
+		memset (cin.h_count,0,sizeof(cin.h_count));
+		memset (cin.h_used,0,sizeof(cin.h_used));
 
 		// read a row of counts
 		FS_Read (counts, sizeof(counts), cl.cinematic_file);
@@ -318,6 +313,7 @@ cblock_t Huff1Decompress (cblock_t in)
 {
 	byte		*input;
 	byte		*out_p;
+	//u16			*out_p;
 	int			nodenum;
 	int			count;
 	cblock_t	out;
@@ -325,16 +321,11 @@ cblock_t Huff1Decompress (cblock_t in)
 	int			*hnodes, *hnodesbase;
 //int		i;
 
-	printf("huff decompress\n");
-
 	// get decompressed count
 	count = in.data[0] + (in.data[1]<<8) + (in.data[2]<<16) + (in.data[3]<<24);
 	input = in.data + 4;
+	//out_p = ds_screen[dma_screen];
 	out_p = out.data = (byte *)Z_Malloc (count);
-	
-	cinematic_texture_handle = register_texture_deferred("cinematic", out_p, cin.width, cin.height, false, 0, 0, 0);
-//	bind_texture(cinematic_texture_handle);
-//	load_texture(cinematic_texture_handle);
 
 	// read bits
 
@@ -350,6 +341,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -361,6 +353,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -372,6 +365,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -383,6 +377,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -394,6 +389,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -405,6 +401,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -416,6 +413,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -427,6 +425,7 @@ cblock_t Huff1Decompress (cblock_t in)
 		{
 			hnodes = hnodesbase + (nodenum<<9);
 			*out_p++ = nodenum;
+			//*out_p++ = dma_palette[nodenum];
 			if (!--count)
 				break;
 			nodenum = cin.numhnodes1[nodenum];
@@ -440,6 +439,10 @@ cblock_t Huff1Decompress (cblock_t in)
 		Com_Printf ("Decompression overread by %i", (input - in.data) - in.count);
 	}
 	out.count = out_p - out.data;
+	//out.count = out_p - ds_screen[dma_screen];
+	//DC_FlushRange(ds_screen[dma_screen],256*192*2);
+	//swiWaitForVBlank();
+	//dma_screen = !dma_screen;
 
 	return out;
 }
@@ -449,28 +452,16 @@ cblock_t Huff1Decompress (cblock_t in)
 SCR_ReadNextFrame
 ==================
 */
-//byte compressed[0x20000];
-byte	samples[22050/14*4];
+static byte	samples[22050/14*4];
 byte *SCR_ReadNextFrame (void)
 {
 	int		r;
 	int		command;
-	byte	samples[22050/14*4];
-//	byte	compressed[0x20000];
-	byte *compressed;
+	//byte	compressed[0x20000];
 	int		size;
 	byte	*pic;
 	cblock_t	in, huf1;
 	int		start, end, count;
-	
-	ds_set_malloc_base(MEM_XTRA);
-	compressed = (byte *)ds_malloc(0x20000);
-	ds_set_malloc_base(MEM_MAIN);
-	
-	printf("reading cin frame\n");
-	
-	if (!compressed)
-		Sys_Error("failed to allocated decompression memory\n");
 
 	// read the next frame
 	r = ds_fread (&command, 4, 1, cl.cinematic_file);
@@ -478,21 +469,19 @@ byte *SCR_ReadNextFrame (void)
 		r = ds_fread (&command, 4, 1, cl.cinematic_file);
 
 	if (r != 1)
-	{
-		ds_free(compressed);
 		return NULL;
-	}
 	command = LittleLong(command);
 	if (command == 2)
-	{
-		ds_free(compressed);
 		return NULL;	// last frame marker
-	}
 
 	if (command == 1)
 	{	// read palette
 		FS_Read (cl.cinematicpalette, sizeof(cl.cinematicpalette), cl.cinematic_file);
 		cl.cinematicpalette_active=0;	// dubious....  exposes an edge case
+		byte *palette = (byte *)&cl.cinematicpalette[0];
+		for(int i=0;i<256;i++) {
+			dma_palette[i] = RGB8(palette[i * 3 + 0], palette[i * 3 + 1], palette[i * 3 + 2]) | (1 << 15);
+		}
 	}
 
 	// decompress the next frame
@@ -509,7 +498,7 @@ byte *SCR_ReadNextFrame (void)
 
 	FS_Read (samples, count*cin.s_width*cin.s_channels, cl.cinematic_file);
 
-//	S_RawSamples (count, cin.s_rate, cin.s_width, cin.s_channels, samples);
+	//S_RawSamples (count, cin.s_rate, cin.s_width, cin.s_channels, samples);
 
 	in.data = compressed;
 	in.count = size;
@@ -520,7 +509,6 @@ byte *SCR_ReadNextFrame (void)
 
 	cl.cinematicframe++;
 
-	ds_free(compressed);
 	return pic;
 }
 
@@ -534,8 +522,6 @@ SCR_RunCinematic
 void SCR_RunCinematic (void)
 {
 	int		frame;
-	
-//	printf("running cinematic\n");
 
 	if (cl.cinematictime <= 0)
 	{
@@ -548,25 +534,20 @@ void SCR_RunCinematic (void)
 
 	if (cls.key_dest != key_game)
 	{	// pause if menu or console is up
-		cl.cinematictime = cls.realtime - cl.cinematicframe*1000/CIN_FRAME_RATE;
+		cl.cinematictime = cls.realtime - cl.cinematicframe*1000/14;
 		return;
 	}
 
-	frame = (int)((cls.realtime - cl.cinematictime)*CIN_FRAME_RATE/1000);
+	frame = (cls.realtime - cl.cinematictime)*14.0/1000;
 	if (frame <= cl.cinematicframe)
 		return;
 	if (frame > cl.cinematicframe+1)
 	{
 		Com_Printf ("Dropped frame: %i > %i\n", frame, cl.cinematicframe+1);
-		cl.cinematictime = cls.realtime - cl.cinematicframe*1000/CIN_FRAME_RATE;
+		cl.cinematictime = cls.realtime - cl.cinematicframe*1000/14;
 	}
 	if (cin.pic)
-	{
 		Z_Free (cin.pic);
-	
-		release_texture(cinematic_texture_handle);
-		cinematic_texture_handle = 1;
-	}
 	cin.pic = cin.pic_pending;
 	cin.pic_pending = NULL;
 	cin.pic_pending = SCR_ReadNextFrame ();
@@ -611,29 +592,61 @@ qboolean SCR_DrawCinematic (void)
 
 	if (!cin.pic)
 		return true;
-	
-//	printf("drawing cinematic\n");
-	
-	float u = (float)cin.width / next_size_up(cin.width);
-	float v = (float)cin.height / next_size_up(cin.height);
-	
-//	float u = 1;
-//	float v = 1;
-	
-	D_DrawQuad(0, 0,0,	0,0,
-			256, 0, 0,	u,0,
-			256, 192, 0,u,v, 
-			0, 192, 0,	0,v,
-			cinematic_texture_handle);
-//			1);
+/*	static int ofs = 0;
+	if(dma_palette) {
+		u16 pal[256];
+		u16 row[256];
+		int i;
+		byte *inp = cin.pic;
+		unsigned short *outp = ds_screen[dma_screen];
+		printf("cin: %d\n",dma_screen);
+		memcpy(pal,dma_palette,256*2);
 
+		int ystep = (cin.height<<16)/192;
+		int xstep = (cin.width<<16)/256;
 
-//	re.DrawStretchRaw (0, 0, viddef.width, viddef.height,
-//		cin.width, cin.height, cin.pic);
+		int yy = 0;
+		for (int y=0 ; y<192; y++)
+		{
+			byte *src8 = inp + ((yy>>16)*cin.width);
+			int xx = 0;
+			for (int x=0 ; x<256 ; x++)
+			{
+				row[x] = pal[src8[xx>>16]];
+				//*outp++ = RGB8((x+ofs)&0xff,0,0);
+				//*outp++ = pal[src8[xx>>16]];//dma_palette[src8[xx>>16]];
+				xx += xstep;
+			}
+			memcpy(outp,row,256*2);
+			outp += 256;
+			yy += ystep;
+		}
+		ofs++;
+		//for(i=0;i<256*192;i++) {
+		//	dma_buffer[i] = dma_palette[*inp++];
+		//}
+	}
+#ifdef ARM9
+	DC_FlushRange(ds_screen[dma_screen],256*192*2);
+	swiWaitForVBlank();
+	dma_screen = !dma_screen;
+#endif
+	*/
+	//re.DrawStretchRaw (0, 0, viddef.width, viddef.height,
+	//	cin.width, cin.height, cin.pic);
 
 	return true;
 }
 
+void mode_fifo_dma_enable() {
+	if(mode_fifo_on == 0) { return; }
+	//DMA0_SRC = (vuint32)(ds_screen[dma_screen]);
+	//DMA0_DEST = (u32)0x04000068;
+#ifdef ARM9
+	DMA0_SRC = (vuint32)(ds_screen[dma_screen]);
+	DMA0_CR = (DMA_ENABLE | DMA_DISP_FIFO | DMA_REPEAT | DMA_DST_FIX | DMA_32_BIT | 4);
+#endif
+}
 /*
 ==================
 SCR_PlayCinematic
@@ -646,13 +659,32 @@ void SCR_PlayCinematic (char *arg)
 	byte	*palette;
 	char	name[MAX_OSPATH], *dot;
 	int		old_khz;
-	
-	Com_Printf("Cinematics disabled in this build\n");
-	SCR_FinishCinematic();
-	return;
-	
-	printf("play cinematic\n");
 
+		SCR_FinishCinematic();
+		return;
+
+	dma_screen = 0;
+	dma_scr_buffer = (unsigned short *)r_cache_alloc(2*2*256*256);
+	compressed = (byte *)r_cache_alloc(0x20000);
+	dma_palette = (unsigned short *)r_cache_alloc(256*2);
+	if(dma_scr_buffer == 0) {
+		SCR_FinishCinematic();
+		return;
+	}
+	mode_fifo_on = 1;
+	ds_screen[0] = dma_scr_buffer;
+	ds_screen[1] = dma_scr_buffer+256*256;
+#ifdef ARM9
+	//ds_screen[0] = (unsigned short *)memUncached(ds_screen[0]);
+	//ds_screen[1] = (unsigned short *)memUncached(ds_screen[1]);
+	videoSetMode(MODE_FIFO);
+	printf("play cinematic\n");
+	DMA0_SRC = (vuint32)(ds_screen[dma_screen]);
+	DMA0_DEST = (u32)0x04000068;
+	DMA0_CR = (DMA_ENABLE | DMA_DISP_FIFO | DMA_REPEAT | DMA_DST_FIX | DMA_32_BIT | 4);
+	//DMA0_CR = (DMA_ENABLE | DMA_DISP_FIFO | DMA_DST_FIX | DMA_32_BIT | 4);
+	//(DMA_COPY_WORDS | DMA_DST_FIX | DMA_DISP_FIFO | DMA_REPEAT | 4);
+#endif
 	// make sure CD isn't playing music
 	CDAudio_Stop();
 
@@ -683,7 +715,7 @@ void SCR_PlayCinematic (char *arg)
 	FS_FOpenFile (name, &cl.cinematic_file);
 	if (!cl.cinematic_file)
 	{
-		Com_Error (ERR_DROP, "Cinematic %s not found.\n", name);
+//		Com_Error (ERR_DROP, "Cinematic %s not found.\n", name);
 		SCR_FinishCinematic ();
 		cl.cinematictime = 0;	// done
 		return;
@@ -708,16 +740,12 @@ void SCR_PlayCinematic (char *arg)
 	Huff1TableInit ();
 
 	// switch up to 22 khz sound if necessary
-	old_khz = (int)Cvar_VariableValue ("s_khz");
+	old_khz = Cvar_VariableValue ("s_khz");
 	if (old_khz != cin.s_rate/1000)
 	{
 		cin.restart_sound = true;
 		Cvar_SetValue ("s_khz", cin.s_rate/1000);
-		
-		printf("restarting sound\n");
 		CL_Snd_Restart_f ();
-		printf("done restarting sound\n");
-		
 		Cvar_SetValue ("s_khz", old_khz);
 	}
 

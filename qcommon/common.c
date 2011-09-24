@@ -1162,10 +1162,12 @@ void Z_Check ()
 	{
 		if(z->magic != Z_MAGIC) {
 			printf("Z_Check error %08X\n",z->magic);
+#ifdef ARM9
 	printf(" press A...");
 	while((keysCurrent() & KEY_A) == 0);
 	while((keysCurrent() & KEY_A) != 0);
 	printf("\n");
+#endif
 			break;
 		}
 		next = z->next;
@@ -1181,20 +1183,24 @@ void Z_Check2 (void *ptr,int size)
 	{
 		if(z->magic != Z_MAGIC) {
 			printf("Z_Check2 magic %08X\n",z->magic);
+#ifdef ARM9
 			printf(" press A...");
 			while((keysCurrent() & KEY_A) == 0);
 			while((keysCurrent() & KEY_A) != 0);
 			printf("\n");
+#endif
 			break;
 		}
 		if( ((u8*)ptr) < (((u8*)z) + z->size) && (((u8*)ptr)+size) > ((u8*)z) ) {
 			printf("Z_Check2 error overlap\n");
 			printf("z: %08X %08X %d\n",z,((u8*)z) + z->size,z->size);
 			printf("p: %08X %08X %d\n",ptr,((u8*)ptr) + size,size);
+#ifdef ARM9
 			printf(" press A...");
 			while((keysCurrent() & KEY_A) == 0);
 			while((keysCurrent() & KEY_A) != 0);
 			printf("\n");
+#endif
 			break;
 		}
 		next = z->next;
@@ -1367,9 +1373,11 @@ Z_Malloc
 */
 void *Z_Malloc (int size)
 {
+#ifdef ARM9
 	register unsigned int lr_r asm ("lr");
 	unsigned int lr = lr_r;
 	//printf("Z_Malloc: %08x\n", lr);
+#endif
 
 	return Z_TagMalloc (size, 0);
 }
@@ -1571,6 +1579,7 @@ void Com_Error_f (void)
 }
 void Z_Check ();
 void printw(char *str) {
+#if 0
 	register unsigned int sp asm ("sp");
 	Z_Check ();
 	return;
@@ -1580,6 +1589,7 @@ void printw(char *str) {
 	while((keysCurrent() & KEY_A) == 0);
 	while((keysCurrent() & KEY_A) != 0);
 	printf("\n");
+#endif
 }
 
 /*
@@ -1685,6 +1695,7 @@ void Qcommon_Init (int argc, char **argv)
 //			Cbuf_AddText ("timedemo 1\n");
 //			Cbuf_AddText ("demomap demo1.dm2\n");
 			Cbuf_AddText ("d1\n");
+			//Cbuf_AddText ("map ntro.cin\n");
 //			Cbuf_AddText ("map base1\n");
 //			Cbuf_AddText ("map bunk1\n");
 //			Cbuf_AddText ("map security\n");

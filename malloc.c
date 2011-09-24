@@ -439,7 +439,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 */
 
 #include <stdio.h>
+#ifdef ARM9
 #include <nds.h>
+#endif
 #include "null/ds.h"
 
 #define FOOTERS 1
@@ -1350,7 +1352,7 @@ static void* win32direct_mmap(size_t size) {
 /* This function supports releasing coalesed segments */
 static int win32munmap(void* ptr, size_t size) {
   MEMORY_BASIC_INFORMATION minfo;
-  char* cptr = ptr;
+  char* cptr = (char *)ptr;
   while (size) {
     if (VirtualQuery(cptr, &minfo, sizeof(minfo)) == 0)
       return -1;

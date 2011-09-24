@@ -931,6 +931,8 @@ float alias_x_add = 0.0f;
 float alias_y_add = 0.0f;
 float alias_z_add = 0.0f;
 
+void Mod_reloadAlias(model_t *mod);
+
 void R_AliasDrawModel (void)
 {
 	extern void	(*d_pdrawspans)(void *);
@@ -939,8 +941,12 @@ void R_AliasDrawModel (void)
 	extern void R_PolysetDrawSpans8_66( void * );
 	extern void R_PolysetDrawSpansConstant8_33( void * );
 	extern void R_PolysetDrawSpansConstant8_66( void * );
+	extern void *Mod_Extradata (model_t *mod);
 
-	s_pmdl = (dmdl_t *)currentmodel->extradata;
+	s_pmdl = (dmdl_t *)Mod_Extradata(currentmodel);
+	if(s_pmdl == 0) {
+		return;
+	}
 
 	if ( r_lerpmodels->value == 0 )
 		currententity->backlerp = 0;

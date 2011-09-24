@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if 1
 #include "client.h"
 #include "snd_loc.h"
+#include "../r_cache.h"
 
 void S_Play(void);
 void S_SoundList(void);
@@ -62,7 +63,6 @@ int   		paintedtime; 	// sample PAIRS
 // because we don't want to free anything until we are
 // sure we won't need it.
 //#define		MAX_SFX		(MAX_SOUNDS*2)
-#define		MAX_SFX		(576)
 sfx_t		known_sfx[MAX_SFX];
 int			num_sfx;
 
@@ -185,8 +185,8 @@ void S_Shutdown(void)
 	{
 		if (!sfx->name[0])
 			continue;
-		if (sfx->cache)
-			Z_Free (sfx->cache);
+		//if (sfx->cache)
+		//	Z_Free (sfx->cache);
 		memset (sfx, 0, sizeof(*sfx));
 	}
 
@@ -308,7 +308,7 @@ void S_UnloadAllSounds(void)
 
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
 	{
-		sfx->cache = 0;
+		sfx->extradata = 0;
 	}
 }
 
@@ -358,14 +358,14 @@ void S_EndRegistration (void)
 			//	Z_Free (sfx->cache);	// from a server that didn't finish loading
 			memset (sfx, 0, sizeof(*sfx));
 		}
-		else
+		/*else
 		{	// make sure it is paged in
 			if (sfx->cache)
 			{
 				size = sfx->cache->length*sfx->cache->width;
 				Com_PageInMemory ((byte *)sfx->cache, size);
 			}
-		}
+		}*/
 
 	}
 
@@ -389,27 +389,72 @@ void r_cache_print(int size);
 	s_registering = false;
 }
 
+extern char		map_name[MAX_QPATH];
+extern int r_model_cache_total;
+extern int r_model_cache_used;
+extern int r_model_cache_temp;
+extern int r_cache_count;
+extern int r_cache_max;
+
+int sound_cache;
+
+int count_largest_block_kb(void);
+
+void log_cache() {
+	FILE *f = fopen("cache.txt","a+");
+#ifdef ARM9
+	int cb = count_largest_block_kb();
+#else
+	int cb = 0;
+#endif
+
+	fprintf(f,"%s\t%d\t%d\t%d\t%d\t%d\n",map_name,
+		r_model_cache_used,
+		r_cache_max,
+		r_model_cache_total-r_model_cache_used,
+		cb,sound_cache);
+
+	fclose(f);
+	exit(0);
+}
+#define SND_CACHE_SIZE (1*1024*1024)
+hunk_t ds_snd_cache;
+
+int s_in_precache = 0;
 void S_Precache (void)
 {
 	int		i;
 	sfx_t	*sfx;
 	int		size;
 
+	s_in_precache = 1;
+	//log_cache();
+	memset(&ds_snd_cache,0,sizeof(ds_snd_cache));
+
+	void *ptr = Hunk_Alloc(SND_CACHE_SIZE);
+	Cache_Init(&ds_snd_cache,ptr,SND_CACHE_SIZE);
+
+void r_cache_stat(char *str);
+	r_cache_stat("S_Precache before\n");
 	// load everything in
 	int snd_total = 0;
+	sound_cache = 0;
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
 	{
 		if (!sfx->name[0])
 			continue;
 		S_LoadSound (sfx);
-		if(sfx->cache) {
-			snd_total += sfx->cache->length;
-		}
+		//if(sfx->cache) {
+		//	sound_cache += sfx->cache->length;
+		//	snd_total += sfx->cache->length;
+		//}
 	}
 
+void r_cache_stat(char *str);
 	printf("\nsound: %d\n",snd_total);
-	while((keysCurrent()&KEY_A) == 0);
-	while((keysCurrent()&KEY_A) != 0);
+	r_cache_stat("S_Precache after\n");
+	s_in_precache = 0;
+	//log_cache();
 }
 
 
@@ -900,7 +945,7 @@ void S_AddLoopSounds (void)
 		sfx = cl.sound_precache[sounds[i]];
 		if (!sfx)
 			continue;		// bad sound effect
-		sc = sfx->cache;
+		sc = (sfxcache_t *)sfx->extradata;
 		if (!sc)
 			continue;
 
@@ -1156,7 +1201,6 @@ void GetSoundtime(void)
 	soundtime = buffers*fullsamples + samplepos/dma.channels;
 }
 
-
 void S_Update_(void)
 {
 	unsigned        endtime;
@@ -1238,7 +1282,7 @@ void S_SoundList(void)
 	{
 		if (!sfx->registration_sequence)
 			continue;
-		sc = sfx->cache;
+		sc = (sfxcache_t *)sfx->extradata;
 		if (sc)
 		{
 			size = sc->length*sc->width*(sc->stereo+1);

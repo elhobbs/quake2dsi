@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug - x86|Win32">
+      <Configuration>Debug - x86</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -19,6 +23,10 @@
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -27,6 +35,9 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -46,6 +57,14 @@
     <SourcePath />
     <ExcludePath />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">
+    <NMakeBuildCommandLine>make -r 2&gt;&amp;1 | sed -e %27s/\(.[a-zA-Z]\+\):\([0-9]\+\):/\1(\2):/</NMakeBuildCommandLine>
+    <NMakeOutput>quake2ds.nds</NMakeOutput>
+    <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>make clean &amp;&amp; make</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>ARM9;_HAVE_STDC;R21</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>c:\devkitpro\libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>make</NMakeBuildCommandLine>
     <NMakeOutput>quake2ds.nds</NMakeOutput>
@@ -54,7 +73,14 @@
     <NMakePreprocessorDefinitions>ARM9;WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>c:\devkitpro\libnds\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">
+    <ClCompile>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <PreprocessorDefinitions>GAME_HARD_LINKED</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="game_link.x" />
@@ -62,7 +88,9 @@
     <None Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="arm7_main.cpp" />
+    <ClCompile Include="arm7_main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="client\cl_cin.c" />
     <ClCompile Include="client\cl_ents.c" />
     <ClCompile Include="client\cl_fx.c" />
@@ -71,6 +99,7 @@
     <ClCompile Include="client\cl_main.c" />
     <ClCompile Include="client\cl_newfx.c" />
     <ClCompile Include="client\cl_parse.c" />
+    <ClCompile Include="client\cl_pred.c" />
     <ClCompile Include="client\cl_scrn.c" />
     <ClCompile Include="client\cl_tent.c" />
     <ClCompile Include="client\cl_view.c" />
@@ -83,7 +112,9 @@
     <ClCompile Include="client\snd_mix.c" />
     <ClCompile Include="ds_3d.c" />
     <ClCompile Include="ds_files.c" />
-    <ClCompile Include="ds_ipc.c" />
+    <ClCompile Include="ds_ipc.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ds_main.c" />
     <ClCompile Include="ds_textures.c" />
     <ClCompile Include="game\g_ai.c" />
@@ -104,7 +135,9 @@
     <ClCompile Include="game\g_turret.c" />
     <ClCompile Include="game\g_utils.c" />
     <ClCompile Include="game\g_weapon.c" />
-    <ClCompile Include="game\libc_wrap.c" />
+    <ClCompile Include="game\libc_wrap.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="game\m_actor.c" />
     <ClCompile Include="game\m_berserk.c" />
     <ClCompile Include="game\m_boss2.c" />
@@ -132,6 +165,7 @@
     <ClCompile Include="game\p_client.c" />
     <ClCompile Include="game\p_hud.c" />
     <ClCompile Include="game\p_trail.c" />
+    <ClCompile Include="game\p_view.c" />
     <ClCompile Include="game\p_weapon.c" />
     <ClCompile Include="game\q_shared.c" />
     <ClCompile Include="keyboard\touchkeyboard.c" />
@@ -139,8 +173,11 @@
     <ClCompile Include="memory.c" />
     <ClCompile Include="null\cd_null.c" />
     <ClCompile Include="null\in_null.c" />
+    <ClCompile Include="null\net_udp.c" />
     <ClCompile Include="null\snddma_null.c" />
-    <ClCompile Include="null\snd_null.c" />
+    <ClCompile Include="null\snd_null.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="null\swimp_null.c" />
     <ClCompile Include="null\sys_null.c" />
     <ClCompile Include="null\vid_menu.c" />
@@ -154,15 +191,22 @@
     <ClCompile Include="qcommon\md4.c" />
     <ClCompile Include="qcommon\net_chan.c" />
     <ClCompile Include="qcommon\pmove.c" />
-    <ClCompile Include="ram.c" />
+    <ClCompile Include="ram.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - x86|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ref_nds\r_alias.c" />
     <ClCompile Include="ref_nds\r_bsp.c" />
     <ClCompile Include="ref_nds\r_draw.c" />
     <ClCompile Include="ref_nds\r_image.c" />
+    <ClCompile Include="ref_nds\r_light.c" />
     <ClCompile Include="ref_nds\r_main.c" />
+    <ClCompile Include="ref_nds\r_misc.c" />
     <ClCompile Include="ref_nds\r_model.c" />
+    <ClCompile Include="ref_nds\r_part.c" />
     <ClCompile Include="ref_nds\r_rast.c" />
+    <ClCompile Include="ref_nds\r_surf.c" />
     <ClCompile Include="r_cache.c" />
+    <ClCompile Include="r_cache2.c" />
     <ClCompile Include="server\sv_ccmds.c" />
     <ClCompile Include="server\sv_ents.c" />
     <ClCompile Include="server\sv_game.c" />
@@ -171,8 +215,6 @@
     <ClCompile Include="server\sv_send.c" />
     <ClCompile Include="server\sv_user.c" />
     <ClCompile Include="server\sv_world.c" />
-    <ClCompile Include="snd_ds.c" />
-    <ClCompile Include="snd_null_7.cpp" />
     <ClCompile Include="stamp.c" />
   </ItemGroup>
   <ItemGroup>

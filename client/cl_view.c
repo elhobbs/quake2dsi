@@ -18,10 +18,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 // cl_view.c -- player rendering positioning
-
+#ifdef ARM9
+#include <nds.h>
+#include <nds/arm9/input.h>
+#endif
 #include "../null/ds.h"
 #include "client.h"
-
+#include "../r_cache.h"
 //=============
 //
 // development tools for weapons
@@ -75,6 +78,7 @@ V_AddEntity
 
 =====================
 */
+void Mod_touchAlias(struct model_s *mod);
 void V_AddEntity (entity_t *ent)
 {
 	if (r_numentities >= MAX_ENTITIES)
@@ -243,6 +247,9 @@ void V_TestLights (void)
 }
 
 //===================================================================
+
+#define MD2_CACHE_SIZE (2*1024*1024)
+hunk_t ds_md2_cache;
 /*
 =================
 CL_PrepRefresh
@@ -264,7 +271,13 @@ void CL_PrepRefresh (void)
 	if (!cl.configstrings[CS_MODELS+1][0])
 		return;		// no map loaded
 
-//	printf("CL_PrepRefresh\n");
+	//log_cache();
+	memset(&ds_md2_cache,0,sizeof(ds_md2_cache));
+
+	void *ptr = r_cache_alloc(MD2_CACHE_SIZE);
+	Cache_Init(&ds_md2_cache,ptr,MD2_CACHE_SIZE);
+
+	//	printf("CL_PrepRefresh\n");
 //void waitforit();
 //	waitforit();
 
@@ -378,6 +391,8 @@ void CL_PrepRefresh (void)
 	SCR_UpdateScreen ();
 	cl.refresh_prepped = true;
 	cl.force_refdef = true;	// make sure we have a valid refdef
+void r_cache_stat(char *str);
+	r_cache_stat("refresh_prepped = true\n");
 
 	// start the cd track
 	CDAudio_Play (atoi(cl.configstrings[CS_CDTRACK]), true);

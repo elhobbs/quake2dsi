@@ -472,7 +472,7 @@ void Con_DrawInput (void)
 	if (cls.key_dest != key_console && cls.state == ca_active)
 		return;		// don't draw anything (always draw if not active)
 
-	text = key_lines[edit_line];
+	text = &key_lines[edit_line][0];
 	
 // add the cursor frame
 	text[key_linepos] = 10+((int)(cls.realtime>>8)&1);

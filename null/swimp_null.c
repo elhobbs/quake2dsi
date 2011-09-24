@@ -49,11 +49,16 @@ void		SWimp_EndFrame (void)
 
 int			SWimp_Init( void *hInstance, void *wndProc )
 {
+	return 0;
 }
 
 void		SWimp_SetPalette( const unsigned char *palette)
 {
+#ifdef ARM9
 	ds_schedule_loadpalette((byte *)palette);
+#else
+	ds_loadpalette((byte *)palette);
+#endif
 }
 
 void		SWimp_Shutdown( void )
