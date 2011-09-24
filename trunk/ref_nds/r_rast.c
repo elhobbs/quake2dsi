@@ -31,6 +31,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define glTexCoord2t16(x, y) glTexCoord2t16(y, x)
 #endif
 
+#ifdef _WIN32
+#define glTexCoord2t16(x, y)
+#endif
+
 void R_RenderPoly(msurface_t *fa);
 
 // !!! if these are changed, they must be changed in asm_draw.h too !!!

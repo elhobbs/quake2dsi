@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef ARM9
 #include <nds.h>
+#endif
 
 #include "null/ds.h"
 
@@ -194,6 +196,7 @@ void vram_free(void *ptr)
 
 void copy_into_vram(unsigned int *dest, unsigned char *src, int size, int rows, int cols, int realX)
 {
+#ifdef ARM9
 	if ((rows == 0) || (cols == 0))
 		swiCopy((uint32*)src, dest , size / 4 | COPY_MODE_WORD);
 	else
@@ -207,13 +210,18 @@ void copy_into_vram(unsigned int *dest, unsigned char *src, int size, int rows, 
 		for (y = 0; y < rows; y++)
 			ds_memcpy(&dest[y * realX], &src[y * cols], cols);
 	}
+#endif
 }
 
 bool free_lru(int);
+unsigned int g_tex_parms;
 
+#ifdef ARM9
 #if 1
 void glColorTable( uint8 format, uint32 addr ) {
+#ifdef ARM9
 GFX_PAL_FORMAT = addr>>(4-(format==GL_RGB4));
+#endif
 }
 //---------------------------------------------------------------------------------
 inline uint32 aalignVal( uint32 val, uint32 to ) {
@@ -257,7 +265,6 @@ extern "C" void glTexParameter(uint8 sizeX, uint8 sizeY, uint32* addr, int mode,
 #endif
 #endif
 	
-unsigned int g_tex_parms;
 unsigned int glTexImage2DQuake(int target, int empty1, int type, int sizeX, int sizeY, int empty2, int param, uint8* texture,
 	unsigned int rows, unsigned int cols, unsigned int realY, unsigned int realX) {
 //---------------------------------------------------------------------------------
@@ -347,6 +354,8 @@ unsigned int glTexImage2DQuake(int target, int empty1, int type, int sizeX, int 
 
   return (unsigned int)addr;
 }
+
+#endif
 
 void ds_resize_in_place(int sizeX, int sizeY, unsigned char *image)
 {
@@ -449,7 +458,7 @@ int ds_teximage2d(int sizeX, int sizeY, unsigned char* texture, bool transparenc
 //#endif
 	tex_xsize = tex_size(resize_xsize);
 	tex_ysize = tex_size(resize_ysize);
-	
+#ifdef ARM9
 	if (!do_resize)
 		return glTexImage2DQuake(0, 0, GL_RGB256, tex_xsize, tex_ysize, 0, TEXGEN_TEXCOORD | GL_TEXTURE_WRAP_S | GL_TEXTURE_WRAP_T | (transparency ? GL_TEXTURE_COLOR0_TRANSPARENT : 0), texture, 0, 0, 0, 0) - 1;
 //		return glTexImage2D(0, 0, GL_RGB256, tex_xsize, tex_ysize, 0, TEXGEN_TEXCOORD | GL_TEXTURE_WRAP_S | GL_TEXTURE_WRAP_T, texture) - 1;
@@ -458,6 +467,10 @@ int ds_teximage2d(int sizeX, int sizeY, unsigned char* texture, bool transparenc
 //		printf("using resized version, %dx%d->%dx%d\n", sizeX, sizeY, resize_xsize, resize_ysize);
 		return glTexImage2DQuake(0, 0, GL_RGB256, tex_xsize, tex_ysize, 0, TEXGEN_TEXCOORD | GL_TEXTURE_WRAP_S | GL_TEXTURE_WRAP_T | (transparency ? GL_TEXTURE_COLOR0_TRANSPARENT : 0), texture, sizeY, sizeX, resize_ysize, resize_xsize) - 1;
 	}
+#else
+	return 0;
+#endif
+
 #endif
 	return 0;
 }
@@ -823,6 +836,7 @@ int register_texture_immediate(char *name, unsigned char *data, int sizeX, int s
 //	t->address = (void *)addr;
 //	
 //	return id;
+	return 0;
 }
 
 void *get_texture_address(int id)
@@ -1010,8 +1024,9 @@ bool load_texture(int id)
 			}
 		
 		into_cache = id;
-		
+#ifdef ARM9
 		DC_FlushRange(vram_e_base, sizeof(big_cols * rows));
+#endif
 	}
 	
 	if (into_cache == id)
@@ -1065,7 +1080,9 @@ bool load_texture(int id)
 //				dest++;
 //				src++;
 //			}
+#ifdef ARM9
 			dmaCopyHalfWords(0, src, dest, big_cols * rows);
+#endif
 			
 //			dest = (unsigned short *)t->address;
 //			src = vram_e_base;
@@ -1508,8 +1525,12 @@ bool bind_texture(int id)
 	
 	if (id >= num_managed_textures)
 	{
+#ifdef ARM9
 		register unsigned int lr_r asm("lr");
 		volatile unsigned int lr = lr_r;
+#else
+		unsigned int lr = 0;
+#endif
 	
 		printf("trying to bind unknown texture! (%d)\n", id);
 		Sys_Error("called from %08x\n", lr);
@@ -1532,7 +1553,9 @@ bool bind_texture(int id)
 			if (current_bound != t->handle)
 			{
 				//removed glBindTexture(0, t->handle);
+#ifdef ARM9
 				GFX_TEX_FORMAT = t->addr;
+#endif
 				current_bound = t->handle;
 			}	
 		}
@@ -1548,14 +1571,18 @@ bool bind_texture(int id)
 			{
 				//removed glBindTexture(0, 0);
 				current_bound = 0;
+#ifdef ARM9
 				GFX_TEX_FORMAT = 0;
+#endif
 			}
 		}
 	}
 	else if (current_bound != 0)
 	{
 		current_bound = 0;
+#ifdef ARM9
 		GFX_TEX_FORMAT = 0;
+#endif
 		//removed glBindTexture(0, 0);
 //		ds_bindtexture(0);
 	}
@@ -1624,14 +1651,30 @@ uint32 vram_banks;
 
 void ds_unlock_vram(void)
 {
+#ifdef ARM9
 	vram_banks = vramSetMainBanks(VRAM_A_LCD,VRAM_B_LCD,VRAM_C_LCD,VRAM_D_LCD);
+#endif
 }
 
 void ds_lock_vram(void)
 {
+#ifdef ARM9
 	vramRestoreMainBanks(vram_banks);
+#endif
 }
 
+#ifdef _WIN32
+enum GL_TEXTURE_SIZE_ENUM {
+	TEXTURE_SIZE_8    = 0, /*!< 8 texels */
+	TEXTURE_SIZE_16   = 1, /*!< 16 texels */
+	TEXTURE_SIZE_32   = 2, /*!< 32 texels */
+	TEXTURE_SIZE_64   = 3, /*!< 64 texels */
+	TEXTURE_SIZE_128  = 4, /*!< 128 texels */
+	TEXTURE_SIZE_256  = 5, /*!< 256 texels */
+	TEXTURE_SIZE_512  = 6, /*!< 512 texels */
+	TEXTURE_SIZE_1024 = 7  /*!< 1024 texels */
+};
+#endif
 int tex_size(int size)
 {
 	switch (size)

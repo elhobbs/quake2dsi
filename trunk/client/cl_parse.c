@@ -185,6 +185,8 @@ void CL_RegisterSounds (void)
 	//printf("\nCL_RegisterSounds\n");
 	//while((keysCurrent()&KEY_A) == 0);
 	//while((keysCurrent()&KEY_A) != 0);
+	void r_cache_stat(char *str);
+	r_cache_stat("CL_RegisterSounds\n");
 	
 	printf("sounds\n0%%");
 
@@ -368,6 +370,8 @@ void CL_ParseServerData (void)
 
 		// need to prep refresh at next oportunity
 		cl.refresh_prepped = false;
+		void r_cache_stat(char *str);
+			r_cache_stat("refresh_prepped = false\n");
 	}
 }
 

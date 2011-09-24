@@ -20,7 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	
 // q_shared.h -- included first by ALL program modules
 
+#ifdef ARM9
 #include <nds.h>
+#endif
 
 #ifdef _WIN32
 // unknown pragmas are SUPPOSED to be ignored, but....
@@ -40,6 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include "../null/ds.h"
 /*
 #if (defined _M_IX86 || defined __i386__) && !defined C_ONLY && !defined __sun__
 #define id386	1
@@ -234,7 +237,7 @@ void Com_PageInMemory (byte *buffer, int size);
 
 // portable case insensitive compare
 #ifdef GAME_HARD_LINKED
-int Q_stricmp (char *s1, char *s2) __attribute__((section(".itcm"), long_call));
+int Q_stricmp (char *s1, char *s2) ITCM_CALL;
 #else
 int Q_stricmp (char *s1, char *s2);
 #endif

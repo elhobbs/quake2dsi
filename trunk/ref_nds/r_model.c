@@ -26,6 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../null/ds.h"
 #include "../r_cache.h"
 
+extern hunk_t ds_md2_cache;
+
+//#define DRAW_DISPLAYLIST 1
+
 #define COLOURED_LIGHTS
 //#define BOXTESTED_BSP
 
@@ -88,6 +92,57 @@ void Mod_Init (void)
 
 static long mod_file_start_pos = 0;
 static FILE *mod_file_handle = 0;
+
+void Mod_touchAlias(model_t *mod) {
+
+	//if(mod->extradata) {
+	//	cached_t *ds = ((cached_t *)(mod->extradata)) - 1;
+	//	ds->visframe = r_framecount;
+	//}
+}
+void Mod_reloadAlias(model_t *mod) {
+	FILE	*h;
+	modfilelen = FS_FOpenFile (mod->name, &h);
+	mod_file_handle = h;
+	if (!h)
+	{
+		return;
+	}
+	mod_file_start_pos = ds_ftell(h);
+	loadmodel = mod;
+	unsigned *buf = (unsigned *)Z_Malloc(modfilelen);
+	if(!buf) {
+		ds_fclose (h);
+		return;
+	}
+	FS_Read (buf, modfilelen, h);
+	ds_fclose (h);
+
+	Mod_LoadAliasModel (mod, buf);
+	Z_Free (buf);
+}
+
+/*
+===============
+Mod_Extradata
+
+Caches the data if needed
+===============
+*/
+void *Mod_Extradata (model_t *mod)
+{
+	void	*r;
+
+	r = Cache_Check (&ds_md2_cache,&(mod->extradata));
+	if (r)
+		return r;
+
+	Mod_reloadAlias (mod);
+
+	if (mod->extradata == 0)
+		Sys_Error ("%s: caching failed", Mod_Extradata);
+	return mod->extradata;
+}
 
 /*
 ==================
@@ -177,7 +232,7 @@ model_t *Mod_ForName (char *name, qboolean crash)
 	switch (LittleLong(type))
 	{
 	case IDALIASHEADER:
-		loadmodel->extradata = Hunk_Begin (modfilelen + 100*1024);//(0x100000);
+		//loadmodel->extradata = Hunk_Begin (modfilelen + 100*1024);//(0x100000);
 		buf = (unsigned *)Z_Malloc(modfilelen);
 		*buf = type;
 		FS_Read (buf+1, modfilelen-sizeof(type), h);
@@ -192,6 +247,7 @@ model_t *Mod_ForName (char *name, qboolean crash)
 		FS_Read (buf+1, modfilelen-sizeof(type), h);
 		Mod_LoadSpriteModel (mod, buf);
 		Z_Free (buf);
+		loadmodel->extradatasize = Hunk_End ();
 		break;
 	
 	case IDBSPHEADER:
@@ -206,7 +262,8 @@ model_t *Mod_ForName (char *name, qboolean crash)
 		//while((keysCurrent()&KEY_A) != 0);
 
 		loadmodel->extradata = Hunk_Begin (5*1024*1024);//(0x580000);
-		Mod_LoadBrushModel (mod, buf);
+		Mod_LoadBrushModel (mod, 0);
+		loadmodel->extradatasize = Hunk_End ();
 		}
 		break;
 
@@ -215,7 +272,6 @@ model_t *Mod_ForName (char *name, qboolean crash)
 		break;
 	}
 
-	loadmodel->extradatasize = Hunk_End ();
 
 	//ri.FS_FreeFile (buf);
 	ds_fclose (h);
@@ -1306,8 +1362,16 @@ int generate_texcoords(msurface_t *fa, model_t *model, unsigned int *texcoord_bu
 				lnumverts, buffer_size);
 	
 	short int *r_pcurrentrealvertbase = model->real_vertexes;
-//	unsigned int *tex_coords = fa->texture_coordinates = (unsigned int *)Hunk_Alloc(lnumverts * sizeof(unsigned int));
+#ifndef DRAW_DISPLAYLIST
+	if (fa->texinfo->flags & SURF_SKY)
+	{
+		fa->texture_coordinates = 0;
+		return 0;
+	}
+	unsigned int *tex_coords = fa->texture_coordinates = (unsigned int *)Hunk_Alloc(lnumverts * sizeof(unsigned int));
+#else
 	unsigned int *tex_coords = texcoord_buffer;
+#endif
 	
 	short x, y, z, s, t;
 	int count;
@@ -1339,7 +1403,11 @@ int generate_texcoords(msurface_t *fa, model_t *model, unsigned int *texcoord_bu
 		s = short_s >> (DS_MIP_LEVEL - DS_SCALE_FUNK);
 		t = short_t >> (DS_MIP_LEVEL - DS_SCALE_FUNK);
 
+#ifdef ARM9
 		*tex_coords = PACK_TEXTURE(t, s);
+#else
+		*tex_coords = 0;
+#endif
 		
 		tex_coords++;
 	}
@@ -1446,9 +1514,13 @@ int generate_surfaces(msurface_t *fa, model_t *model, unsigned int *texcoord_buf
 		y_curr = r_pcurrentrealvertbase[index + 1];
 		z_curr = r_pcurrentrealvertbase[index + 2];
 		
+#ifdef ARM9
 		*cmd_ptr++ = FIFO_COMMAND_PACK(FIFO_BEGIN,
 				FIFO_TEX_COORD, FIFO_VERTEX16,
 				FIFO_TEX_COORD);
+#else
+		*cmd_ptr++ = 0;
+#endif
 
 		*cmd_ptr++ = 0;
 		*cmd_ptr++ = init_uv[0];
@@ -1456,9 +1528,13 @@ int generate_surfaces(msurface_t *fa, model_t *model, unsigned int *texcoord_buf
 		*cmd_ptr++ = ((unsigned int)(unsigned short)init_z[0]);
 		*cmd_ptr++ = init_uv[1];
 
+#ifdef ARM9
 		*cmd_ptr++ = FIFO_COMMAND_PACK(FIFO_VERTEX16,
 				FIFO_TEX_COORD, FIFO_VERTEX16,
 				FIFO_NOP);
+#else
+		*cmd_ptr++ = 0;
+#endif
 
 		*cmd_ptr++ = (init_y[1] << 16) | (init_x[1] & 0xffff);
 		*cmd_ptr++ = ((unsigned int)(unsigned short)init_z[1]);
@@ -1481,7 +1557,7 @@ int generate_surfaces(msurface_t *fa, model_t *model, unsigned int *texcoord_buf
 Mod_LoadBrushModel
 =================
 */
-void Mod_LoadBrushModel (model_t *mod, void *buffer)
+void Mod_LoadBrushModel (model_t *mod, void *buffer_unused)
 {
 	int			i;
 	dheader_t	h,*header=&h;
@@ -1572,14 +1648,18 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 //			continue;
 
 		generate_texcoords(mod->surfaces + i, mod, tex_coord_buffer, 100);
+#ifdef DRAW_DISPLAYLIST
 		generate_surfaces(mod->surfaces + i, mod, tex_coord_buffer);
+#endif
 		
 //		printf("%.2f\n", (float)i / mod->numsurfaces * 100.0f);
 	}
 	
 	ds_free(tex_coord_buffer);
 	
+#ifdef ARM9
 	DC_FlushAll();
+#endif
 	
 //	printf("%d\n", added_to_hunk);
 //	while(1);
@@ -1615,7 +1695,26 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 		ri.Sys_Error (ERR_DROP, "%s has wrong version number (%i should be %i)",
 				 mod->name, version, ALIAS_VERSION);
 
-	pheader = (dmdl_t *)Hunk_Alloc (LittleLong(pinmodel->ofs_end));
+	Cache_Alloc(&ds_md2_cache,(cache_user_t *)&(mod->extradata),LittleLong(pinmodel->ofs_end),mod->name);
+	if(mod->extradata == 0)
+		return;
+	pheader = (dmdl_t *)mod->extradata;
+
+/*	cached_t *ds = DS_CacheAlloc(&ds_md2_cache,LittleLong(pinmodel->ofs_end));
+	if(!ds) {
+		mod->extradata = 0;
+		mod->extradatasize = 0;
+		return;
+	}
+	ds->owner = (cached_t **)&mod->extradata;
+	mod->extradata = (ds+1);
+	mod->extradatasize = LittleLong(pinmodel->ofs_end);
+	ds->visframe = r_framecount;
+	pheader = (dmdl_t *)(ds+1);
+*/
+
+
+	//pheader = (dmdl_t *)Hunk_Alloc (LittleLong(pinmodel->ofs_end));
 	
 	// byte swap the header fields and sanity check
 	for (i=0 ; i<sizeof(dmdl_t)/4 ; i++)
@@ -1900,13 +1999,15 @@ void Mod_FreeAll (void)
 	int		i;
 
 	//r_cache_clear();
-	//printf("Mod_FreeAll\n");
+	printf("Mod_FreeAll\n");
 	//while((keysCurrent()&KEY_A) == 0);
 	//while((keysCurrent()&KEY_A) != 0);
+	memset(mod_known,0,sizeof(mod_known));
+	return;
 
 	for (i=0 ; i<mod_numknown ; i++)
 	{
-		if (mod_known[i].extradatasize)
+		if (mod_known[i].extradata)
 			Mod_Free (&mod_known[i]);
 	}
 }

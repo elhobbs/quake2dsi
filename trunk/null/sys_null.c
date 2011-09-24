@@ -21,7 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef ARM9
 #include <sys/dir.h>
+#else
+#include <io.h>
+#include <direct.h>
+#endif
 #include <ctype.h>
 
 #include "../qcommon/qcommon.h"
@@ -29,8 +34,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "glob.h"
 
 #include "ds.h"
+#ifdef ARM9
 #include "../quake_ipc.h"
 #include "../cyg-profile.h"
+#endif
 
 //#include <user_debugger.h>
 
@@ -40,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int	curtime = 0;
 unsigned int sys_frame_time;		//for the game...hmmm...
 
-int should_crash = 0;
+//int should_crash = 0;
 
 void Sys_Error (char *error, ...)
 {
@@ -51,7 +58,9 @@ void Sys_Error (char *error, ...)
 	vprintf (error,argptr);
 	va_end (argptr);
 	printf ("\n");
+#ifdef ARM9
 	register unsigned int link_register asm ("lr");
+#endif
 
 void disable_keyb(void);
 	disable_keyb();
@@ -60,7 +69,9 @@ void r_cache_print(int size);
 
 	r_cache_print(0);
 
+#ifdef ARM9
 	printf("link register is %08x\n", link_register);
+#endif
 
 #ifdef USE_DEBUGGER
 	while (1)
@@ -117,7 +128,9 @@ extern "C" void	*Sys_GetGameAPI (void *parms)
 	ds_fread(game_library, 1, length, fp);
 	ds_fclose(fp);
 	
+#ifdef ARM9
 	IC_InvalidateAll();
+#endif
 	
 	printf("Sys_GetGameAPI is at %08x\n%08x + %08x\n",
 			/*(unsigned int)game_library + */*(unsigned int *)game_library,
@@ -142,16 +155,16 @@ extern "C" void	*Sys_GetGameAPI (void *parms)
 void Sys_Quit (void)
 {
 	printf("Sys_Quit()\n");
-//	exit (0);
+	exit (0);
 	
 	//ipc_block_ready_9to7();
 	//quake_ipc_9to7->message_type = kPowerOff;
 	//ipc_set_ready_9to7();
-	fifo_msg msg;
-	msg.type = kPowerOff;
-	fifoSendDatamsg(FIFO_9to7,sizeof(msg),(u8 *)&msg);
-	while(!fifoCheckValue32(FIFO_9to7));
-	int ret = (int)fifoGetValue32(FIFO_9to7);
+	//fifo_msg msg;
+	//msg.type = kPowerOff;
+	//fifoSendDatamsg(FIFO_9to7,sizeof(msg),(u8 *)&msg);
+	//while(!fifoCheckValue32(FIFO_9to7));
+	//int ret = (int)fifoGetValue32(FIFO_9to7);
 }
 
 void	Sys_UnloadGame (void)
@@ -235,7 +248,11 @@ void *Hunk_Alloc (int size)
 	size =  (size + 0xf) & 0xfffffff0;
 	if (curhunksize + size > maxhunksize)
 	{
+#ifdef ARM9
 		register unsigned int lr asm ("lr");
+#else
+		unsigned int lr = 0;
+#endif
 		printf("hunk size is %x bytes, tried adding %d to %d, %d short\nlr is %08x\n",
 				maxhunksize, size, curhunksize, (curhunksize + size) - maxhunksize, lr);
 		printf("cb_alloc: %d\n",cb_alloc);
@@ -258,8 +275,10 @@ int Hunk_End (void)
 	
 	if(maxhunksize > (2*1024*1024)) {
 		printf("Hunk_End: %d %d\n",curhunksize,maxhunksize);
+#ifdef ARM9
 		while((keysCurrent()&KEY_A) == 0);
 		while((keysCurrent()&KEY_A) != 0);
+#endif
 	}
 
 	ds_set_malloc_base(MEM_XTRA);
@@ -313,6 +332,9 @@ int		Hunk_End (void)
 int		Sys_Milliseconds (void)
 {
 	curtime = (unsigned int)((float)hblanks / 15.72f);
+#ifdef _WIN32
+	hblanks+=1024;
+#endif
 	
 	return curtime;
 }
@@ -330,10 +352,15 @@ int		Sys_Milliseconds (void)
 void	Sys_Mkdir (char *path)
 {
 	disk_mode();
+#ifdef ARM9
 	mkdir(path, 777);
+#else
+	mkdir(path);
+#endif
 	ram_mode();
 }
 
+#ifdef ARM9
 DIR *dir_iterator = NULL;
 char	findbase[MAX_OSPATH];
 char	findpattern[MAX_OSPATH];
@@ -452,7 +479,82 @@ void Sys_FindClose (void)
 	
 	ram_mode();
 }
+#endif
 
+#ifdef _WIN32
+//============================================
+
+char	findbase[MAX_OSPATH];
+char	findpath[MAX_OSPATH];
+int		findhandle;
+
+static qboolean CompareAttributes( unsigned found, unsigned musthave, unsigned canthave )
+{
+	if ( ( found & _A_RDONLY ) && ( canthave & SFF_RDONLY ) )
+		return false;
+	if ( ( found & _A_HIDDEN ) && ( canthave & SFF_HIDDEN ) )
+		return false;
+	if ( ( found & _A_SYSTEM ) && ( canthave & SFF_SYSTEM ) )
+		return false;
+	if ( ( found & _A_SUBDIR ) && ( canthave & SFF_SUBDIR ) )
+		return false;
+	if ( ( found & _A_ARCH ) && ( canthave & SFF_ARCH ) )
+		return false;
+
+	if ( ( musthave & SFF_RDONLY ) && !( found & _A_RDONLY ) )
+		return false;
+	if ( ( musthave & SFF_HIDDEN ) && !( found & _A_HIDDEN ) )
+		return false;
+	if ( ( musthave & SFF_SYSTEM ) && !( found & _A_SYSTEM ) )
+		return false;
+	if ( ( musthave & SFF_SUBDIR ) && !( found & _A_SUBDIR ) )
+		return false;
+	if ( ( musthave & SFF_ARCH ) && !( found & _A_ARCH ) )
+		return false;
+
+	return true;
+}
+
+char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave )
+{
+	struct _finddata_t findinfo;
+
+	if (findhandle)
+		Sys_Error ("Sys_BeginFind without close");
+	findhandle = 0;
+
+	COM_FilePath (path, findbase);
+	findhandle = _findfirst (path, &findinfo);
+	if (findhandle == -1)
+		return NULL;
+	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
+		return NULL;
+	Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+	return findpath;
+}
+
+char *Sys_FindNext ( unsigned musthave, unsigned canthave )
+{
+	struct _finddata_t findinfo;
+
+	if (findhandle == -1)
+		return NULL;
+	if (_findnext (findhandle, &findinfo) == -1)
+		return NULL;
+	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
+		return NULL;
+
+	Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+	return findpath;
+}
+
+void Sys_FindClose (void)
+{
+	if (findhandle != -1)
+		_findclose (findhandle);
+	findhandle = 0;
+}
+#endif
 void	Sys_Init (void)
 {
 }
@@ -499,7 +601,9 @@ void quake2_main (int argc, char **argv)
 	int hit_count = 0;
 	while (1)
 	{
+#ifdef ARM9
 		scanKeys();
+#endif
 		
 #ifdef PROFILE_CODE
 //		if (hit_count == 100)

@@ -409,9 +409,11 @@ void check_planes(char *str) {
 		}
 	}
 	if(j != 0) {
+#ifdef ARM9
 		printf("press A\n");
 		while((keysCurrent()&KEY_A) == 0);
 		while((keysCurrent()&KEY_A) != 0);
+#endif
 	}
 }
 
@@ -657,6 +659,9 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	FILE			*h;
 	static unsigned	last_checksum;
 
+	printf("%s\n",name);
+	void r_cache_stat(char *str);
+	r_cache_stat("CM_LoadMap\n");
 	//register unsigned int lr_r asm ("lr");
 	//unsigned int lr = lr_r;
 	//printf("already in RAM mode, %08x\n", lr);
@@ -689,9 +694,9 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	numcmodels = 0;
 	numvisibility = 0;
 	numentitychars = 0;
-//	map_entitystring[0] = 0;
-//	map_name[0] = 0;
-	byte_write(&map_entitystring[0], 0);
+	map_entitystring = "";
+	//map_name[0] = 0;
+	//byte_write(&map_entitystring[0], 0);
 	byte_write(&map_name[0], 0);
 
 	if (!name || !name[0])
@@ -725,13 +730,23 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 	last_checksum = LittleLong (Com_BlockChecksum (buf, length));
 	*checksum = last_checksum;
 
+		/*for(i=0;i<(4*24);i++) {
+			printf("%02X",((unsigned char*)buf)[i]);
+		}
+		printf("\n");*/
 	header = *(dheader_t *)buf;
 	for (i=0 ; i<sizeof(dheader_t)/4 ; i++)
 		((int *)&header)[i] = LittleLong ( ((int *)&header)[i]);
 
-	if (header.version != BSPVERSION)
+		/*for(i=0;i<(4*24);i++) {
+			printf("%02X",((unsigned char*)buf)[i]);
+		}
+		printf("\n");*/
+
+	if (header.version != BSPVERSION) {
 		Com_Error (ERR_DROP, "CMod_LoadBrushModel: %s has wrong version number (%i should be %i)"
 		, name, header.version, BSPVERSION);
+	}
 
 	cmod_base = (byte *)buf;
 
@@ -815,8 +830,10 @@ int		CM_LeafContents (int leafnum)
 
 int		CM_LeafCluster (int leafnum)
 {
-	if (leafnum < 0 || leafnum >= numleafs)
+	if (leafnum < 0 || leafnum >= numleafs) {
+		printf("w: %d m: %d\n",leafnum,numleafs);
 		Com_Error (ERR_DROP, "CM_LeafCluster: bad number");
+	}
 	return map_leafs[leafnum].cluster;
 }
 
@@ -1142,7 +1159,7 @@ CM_ClipBoxToBrush
 ================
 */
 void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
-					  trace_t *trace, cbrush_t *brush) __attribute__((section(".itcm"), long_call));
+					  trace_t *trace, cbrush_t *brush) ITCM_CALL;
 
 void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 					  trace_t *trace, cbrush_t *brush)
@@ -1387,7 +1404,7 @@ CM_RecursiveHullCheck
 ==================
 */
 #if 1
-void CM_RecursiveHullCheck (int num, float p1f, float p2f, vec3_t p1, vec3_t p2) __attribute__((section(".itcm"), long_call));
+void CM_RecursiveHullCheck (int num, float p1f, float p2f, vec3_t p1, vec3_t p2) ITCM_CALL;
 void CM_RecursiveHullCheck (int num, float p1f, float p2f, vec3_t p1, vec3_t p2)
 {
 	cnode_t		*node;

@@ -22,7 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 #include "../null/ds.h"
+#ifdef ARM9
 #include "../quake_ipc.h"
+#endif
+
+//#define DRAW_DISPLAYLIST 1
 
 msurface_t *r_alpha_surfaces = NULL;
 
@@ -43,7 +47,7 @@ void D_DrawQuad(int u, int v, int iz, float s, float t,
 	int u3, int v3, int iz3, float s3, float t3,
 	int u4, int v4, int iz4, float s4, float t4, int texture_handle);
 
-image_t *R_TextureAnimation (mtexinfo_t *tex) __attribute__((section(".itcm"), long_call));
+image_t *R_TextureAnimation (mtexinfo_t *tex) ITCM_CALL;
 
 //=============================================================================
 
@@ -76,7 +80,7 @@ image_t *Draw_FindPic (char *name)
 }
 
 
-u8 dummy_tex[64] = {0,0,0};
+byte dummy_tex[64] = {0,0,0};
 
 void printw(char *str);
 
@@ -563,17 +567,19 @@ unsigned int this_frame_max = 0, this_frame_average = 0, this_frame_total = 0;
 
 //unsigned int cmd_list[16];
 
-inline void ds_draw_list(unsigned int* list, unsigned int count) __attribute__ ((no_instrument_function));
+inline void ds_draw_list(unsigned int* list, unsigned int count) ITCM_CALL;
 inline void ds_draw_list(unsigned int* list, unsigned int count)
 {
+#ifdef ARM9
 	while(DMA_CR(0) & DMA_BUSY);
 	
 	DMA_SRC(0) = (uint32)list;
 	DMA_DEST(0) = 0x4000400;
 	DMA_CR(0) = DMA_FIFO | count;
+#endif
 }
 
-void R_RenderPoly(msurface_t *fa) __attribute__((section(".itcm"), long_call));
+void R_RenderPoly(msurface_t *fa) ITCM_CALL;
 void R_RenderPoly(msurface_t *fa)
 {
 	medge_t *pedges = currentmodel->edges;
@@ -715,7 +721,9 @@ void R_RenderPoly(msurface_t *fa)
 	DS_COLOUR3B(comb_brightness, comb_brightness, comb_brightness);
 #endif
 	
-#if 0
+#ifndef DRAW_DISPLAYLIST
+	if(fa->texture_coordinates) 
+	{
 	short init_x[2], init_y[2], init_z[2];
 //	short init_s[2], init_t[2];
 	short x_curr, y_curr, z_curr, s_curr, t_curr;
@@ -801,6 +809,7 @@ void R_RenderPoly(msurface_t *fa)
 //
 //			glCallList((const u32 *)cmd_list);
 
+#ifdef ARM9
 			DS_BEGIN_TRIANGLE();
 
 			GFX_TEX_COORD = init_uv[0];
@@ -811,7 +820,7 @@ void R_RenderPoly(msurface_t *fa)
 
 			GFX_TEX_COORD = uv_curr;
 			DS_VERTEX3V16(x_curr, y_curr, z_curr);
-			
+#endif
 			drawn_tris++;
 
 			init_x[1] = x_curr;
@@ -820,9 +829,11 @@ void R_RenderPoly(msurface_t *fa)
 			init_uv[1] = uv_curr;
 		}
 	}
-#endif
+	}
+#else
 	if (fa->display_list)
 		ds_draw_list(fa->display_list, (num_verts - 2) * 12);
+#endif
 	
 //	if (using_transparency == true)
 //		ds_polyfmt(0, 31, 0, POLY_CULL_NONE);
@@ -879,7 +890,7 @@ void R_ZDrawSubmodelPolys (model_t *pmodel)
 }
 
 float tri_z;
-static v16 g_depth = 0;
+static short g_depth = 0;
 
 void reset_triz(void)
 {
@@ -897,6 +908,10 @@ void next_triz(void)
 #define glTexCoord2t16(x, y) glTexCoord2t16(y, x)
 #endif
 
+#ifdef _WIN32
+#define glTexCoord2t16(x, y)
+#endif
+
 /******************************************************************************
 	
 	Direct copy of glVertex3v16()
@@ -906,8 +921,10 @@ void next_triz(void)
 ******************************************************************************/
 static inline void gxVertex3i(v16 x, v16 y, v16 z)
 {
+#ifdef ARM9
 	GFX_VERTEX16 = (y << 16) | (x & 0xFFFF);
 	GFX_VERTEX16 = ((uint32)(uint16)z);
+#endif
 }
 
 
@@ -920,7 +937,9 @@ static inline void gxVertex3i(v16 x, v16 y, v16 z)
 ******************************************************************************/
 static inline void gxVertex2i(v16 x, v16 y)
 {
+#ifdef ARM9
 	GFX_VERTEX_XY = (y << 16) | (x & 0xFFFF);	
+#endif
 }
 
 static inline void gxVertex3f(float x,float y) {

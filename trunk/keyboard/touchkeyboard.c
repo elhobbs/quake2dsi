@@ -17,7 +17,9 @@
 // * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // *
 // */
+#ifdef ARM9
 #include <nds.h>
+#endif
 
 struct key_data {
 	char keyNum;
@@ -213,9 +215,11 @@ extern unsigned char keyboard_pal_raw[];
 
 void clear_keyboard(int mapBase)
 {
+#ifdef ARM9
 	printf("clearing\n");
 	for (int r = 0; r < 32 * 32; r++)
 		((u16 *) SCREEN_BASE_BLOCK_SUB(mapBase))[r] = 127;
+#endif
 }
 
 void set_keyb_show_mode(int mode)
@@ -243,6 +247,7 @@ bool inited = false;
 
 void drawKeyboard(int tileBase, int mapBase)
 {
+#ifdef ARM9
 	if (needs_refresh || keys_down)
 	{
 		needs_refresh = false;
@@ -303,9 +308,11 @@ void drawKeyboard(int tileBase, int mapBase)
 		
 		keys[r].pressed = false;
 	}
+#endif
 }
 
 void setKeyHighlight(int key, bool highlight) {
+#ifdef ARM9
 	u16* base = ((u16 *) SCREEN_BASE_BLOCK_SUB(gmapBase));
 
 	if (highlight) {
@@ -319,6 +326,7 @@ void setKeyHighlight(int key, bool highlight) {
 		base[(keyboardY + keys[key].y + 1) * 32 + keyboardX + keys[key].x] &= ~0x1000;
 		base[(keyboardY + keys[key].y + 1) * 32 + keyboardX + keys[key].x + 1] &= ~0x1000;
 	}
+#endif
 }
 
 void get_pen_pos(short *px, short *py);
@@ -328,6 +336,7 @@ void disable_keyb(void);
 
 int _addKeyboardEvents(int *key_index,int *held)
 {
+#ifdef ARM9
 		short x, y;
 		get_pen_pos(&x, &y);
 		
@@ -467,11 +476,13 @@ int _addKeyboardEvents(int *key_index,int *held)
 					}
 			}
 		}
+#endif
 	return -1;
 }
 
 int addKeyboardEvents()
 {
+#ifdef ARM9
 	static int held_index = 0;
 	static int held_key = -1;
 	static u32 _keys_last;
@@ -509,5 +520,6 @@ int addKeyboardEvents()
 		}
 	}
 	_keys_last = _keys;
+#endif
 	return -1;
 }

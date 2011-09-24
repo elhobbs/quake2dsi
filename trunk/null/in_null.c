@@ -57,7 +57,7 @@ void IN_Frame (void)
 //void IN_Move (usercmd_t *cmd)
 //{
 //}
-#if 1
+#ifdef ARM9
 touchPosition	g_lastTouch  = { 0,0,0,0 };
 touchPosition	g_currentTouch = { 0,0,0,0 };
 
@@ -98,25 +98,6 @@ void IN_Move (usercmd_t *cmd)
 #else
 void IN_Move (usercmd_t *cmd)
 {
-	short px, py;
-	static unsigned int last;
-	unsigned int down = keysCurrent();
-
-
-	if(down & KEY_TOUCH) {
-		get_pen_pos(&px, &py);
-		if(last & KEY_TOUCH) {
-			if (m_pitch->value > 0)
-				cl.viewangles[PITCH] += (((py - last_py) * 2) * sensitivity->value / 11);
-			else
-				cl.viewangles[PITCH] -= (((py - last_py) * 2) * sensitivity->value / 11);
-
-			cl.viewangles[YAW] -= (((px - last_px) * 2) * sensitivity->value / 11);
-		}
-		last_px = px;
-		last_py = py;
-	}
-	last = down;
 }
 #endif
 void IN_Activate (qboolean active)
@@ -150,6 +131,7 @@ extern bool ipc_disabled;
 extern int doing_texture_loads;
 extern cvar_t *r_drawworld;
 
+#ifdef ARM9
 u32 nds_keys[] = {
 K_PAD_A,
 K_PAD_B,
@@ -203,7 +185,13 @@ void IN_osk() {
 		}
 	}
 }
+#else
+void IN_Buttons() {
+}
 
+void IN_osk() {
+}
+#endif
 void IN_Commands (void)
 {	
 	IN_osk();

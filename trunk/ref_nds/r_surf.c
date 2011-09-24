@@ -42,12 +42,14 @@ void R_DrawSurfaceBlock8_mip1 (void);
 void R_DrawSurfaceBlock8_mip2 (void);
 void R_DrawSurfaceBlock8_mip3 (void);
 
+#if 0
 static void	(*surfmiptable[4])(void) = {
 	R_DrawSurfaceBlock8_mip0,
 	R_DrawSurfaceBlock8_mip1,
 	R_DrawSurfaceBlock8_mip2,
 	R_DrawSurfaceBlock8_mip3
 };
+#endif
 
 void R_BuildLightMap (void);
 extern	unsigned		blocklights[1024];	// allow some very large lightmaps
@@ -65,7 +67,7 @@ R_TextureAnimation
 Returns the proper texture for a given time and base texture
 ===============
 */
-image_t *R_TextureAnimation (mtexinfo_t *tex) __attribute__((section(".itcm"), long_call));
+image_t *R_TextureAnimation (mtexinfo_t *tex) ITCM_CALL;
 image_t *R_TextureAnimation (mtexinfo_t *tex)
 {
 	int		c;

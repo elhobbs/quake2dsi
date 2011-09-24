@@ -1395,6 +1395,8 @@ void CL_Precache_f (void)
 		CM_LoadMap (cl.configstrings[CS_MODELS+1], true, &map_checksum);
 		CL_RegisterSounds ();
 		CL_PrepRefresh ();
+void S_Precache (void);
+		S_Precache ();
 		return;
 	}
 

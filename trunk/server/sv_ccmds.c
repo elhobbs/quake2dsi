@@ -475,6 +475,7 @@ void SV_DemoMap_f (void)
 	SV_Map (true, Cmd_Argv(1), false );
 }
 
+void S_StopAllSounds(void);
 /*
 ==================
 SV_GameMap_f
@@ -499,6 +500,8 @@ void SV_GameMap_f (void)
 	int			i;
 	client_t	*cl;
 	qboolean	*savedInuse;
+
+	S_StopAllSounds();
 
 	if (Cmd_Argc() != 2)
 	{

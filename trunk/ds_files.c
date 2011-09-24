@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef ARM9
 #include <nds.h>
+#endif
 
 #include "null/ds.h"
 #include "memory.h"
@@ -230,9 +232,9 @@ int _ds_fwrite(void *buf, int size, int count, struct ds_file *fp, unsigned int 
 		printf("error: trying to _fwrite in a NULL file handle\n");
 	if (fp->file == NULL)
 		printf("error: trying to _fwrite with a valid handle but invalid file pointer\n");
-	if ((buf >= get_memory_base()) &&
-		((unsigned int)buf < (unsigned int)get_memory_base() + (32 << 20)))		//bit of a hack
-		printf("error: trying to _fwrite with a buffer that\'s in EXRAM (%08x)\n", buf);
+	//if ((buf >= get_memory_base()) &&
+	//	((unsigned int)buf < (unsigned int)get_memory_base() + (32 << 20)))		//bit of a hack
+	//	printf("error: trying to _fwrite with a buffer that\'s in EXRAM (%08x)\n", buf);
 	
 	disk_mode();
 	

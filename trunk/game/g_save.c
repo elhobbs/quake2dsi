@@ -215,7 +215,7 @@ void InitGame (void)
 	// items
 	InitItems ();
 	
-	should_crash = (unsigned int)gi.error;
+	should_crash = (int)gi.error;
 
 //	Com_sprintf (game.helpmessage1, sizeof(game.helpmessage1), "");
 //	Com_sprintf (game.helpmessage2, sizeof(game.helpmessage2), "");

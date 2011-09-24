@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#ifdef ARM9
 #include <nds.h>
+#endif
 
 #include "null/ds.h"
 #include "ram.h"

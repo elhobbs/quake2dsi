@@ -170,8 +170,8 @@ extern oldrefdef_t      r_refdef;
 
 // d_iface.h: interface header file for rasterization driver modules
 
-#define WARP_WIDTH              0
-#define WARP_HEIGHT             0
+#define WARP_WIDTH              1
+#define WARP_HEIGHT             1
 
 #define MAX_LBM_HEIGHT  480
 

@@ -38,9 +38,6 @@
     <ClCompile Include="null\snd_null.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="snd_null_7.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -296,9 +293,6 @@
     <ClCompile Include="null\cd_null.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="snd_ds.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\cl_tent.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -354,6 +348,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="null\sys_null.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_nds\r_part.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cl_pred.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="null\net_udp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game\p_view.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_nds\r_light.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_nds\r_misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_nds\r_surf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="r_cache2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
