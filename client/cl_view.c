@@ -260,7 +260,7 @@ Call before entering a new level, or after changing dlls
 void CL_PrepRefresh (void)
 {
 	char		mapname[32];
-	int			i;
+	int			i,n;
 	char		name[MAX_QPATH];
 	float		rotate;
 	vec3_t		axis;
@@ -307,18 +307,20 @@ void CL_PrepRefresh (void)
 	for (i=1 ; i<MAX_MODELS && cl.configstrings[CS_MODELS+i][0] ; i++)
 		nummodels++;
 	
-	printf("models\n0%%");
+	printf("models\n");
+
+	n = nummodels/32 + 1;
 
 	for (i=1 ; i<MAX_MODELS && cl.configstrings[CS_MODELS+i][0] ; i++)
 	{
-		if (i >= 2)
-			if (((i - 1) % (nummodels / 5)) == 0)
-				printf("..%d%%", (int)((float)(i - 1) / nummodels * 100));
+		if ((i % n) == 0) {
+			printf(".");
+		}
 		
 		strcpy (name, cl.configstrings[CS_MODELS+i]);
 		name[37] = 0;	// never go beyond one line
 		if (name[0] != '*')
-			Com_Printf ("%s\n", name); 
+			Com_DPrintf ("%s\n", name); 
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
 		if (name[0] == '#')
@@ -339,21 +341,22 @@ void CL_PrepRefresh (void)
 			else
 				cl.model_clip[i] = NULL;
 		}
-		if (name[0] != '*')
-			Com_Printf ("                                     \r");
+		//if (name[0] != '*')
+		//	Com_Printf ("                                     \r");
 	}
 
-	Com_Printf ("\nimages\n0%%", i); 
+	Com_Printf ("\nimages\n"); 
 	SCR_UpdateScreen ();
 	
 	set_gui_loading();
 	for (i=1 ; i<MAX_IMAGES && cl.configstrings[CS_IMAGES+i][0] ; i++)
 		numimages++;
+	n = numimages/32 + 1;
 	for (i=1 ; i<MAX_IMAGES && cl.configstrings[CS_IMAGES+i][0] ; i++)
 	{
-		if (i >= 2)
-			if (((i - 1) % (numimages / 5)) == 0)
-				printf("..%d%%", (int)((float)(i - 1) / numimages * 100));
+		if ((i%n) == 0) {
+			printf(".");
+		}
 		
 		cl.image_precache[i] = re.RegisterPic (cl.configstrings[CS_IMAGES+i]);
 		Sys_SendKeyEvents ();	// pump message loop

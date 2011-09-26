@@ -1999,7 +1999,7 @@ void Mod_FreeAll (void)
 	int		i;
 
 	//r_cache_clear();
-	printf("Mod_FreeAll\n");
+	Com_DPrintf("Mod_FreeAll\n");
 	//while((keysCurrent()&KEY_A) == 0);
 	//while((keysCurrent()&KEY_A) != 0);
 	memset(mod_known,0,sizeof(mod_known));

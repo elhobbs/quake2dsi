@@ -423,26 +423,33 @@ hunk_t ds_snd_cache;
 int s_in_precache = 0;
 void S_Precache (void)
 {
-	int		i;
+	int		i,n;
 	sfx_t	*sfx;
-	int		size;
+	int		size = r_model_cache_total - (r_model_cache_used + r_model_cache_temp) - SND_CACHE_SIZE;
 
 	s_in_precache = 1;
 	//log_cache();
 	memset(&ds_snd_cache,0,sizeof(ds_snd_cache));
 
-	void *ptr = Hunk_Alloc(SND_CACHE_SIZE);
-	Cache_Init(&ds_snd_cache,ptr,SND_CACHE_SIZE);
+	size = size > SND_CACHE_SIZE ? size: SND_CACHE_SIZE;
+	void *ptr = Hunk_Alloc(size);
+	Cache_Init(&ds_snd_cache,ptr,size);
 
 void r_cache_stat(char *str);
 	r_cache_stat("S_Precache before\n");
 	// load everything in
 	int snd_total = 0;
 	sound_cache = 0;
+	Com_Printf("sound precache\n");
+	n = num_sfx/32 + 1;
 	for (i=0, sfx=known_sfx ; i < num_sfx ; i++,sfx++)
 	{
+		if((i%n) == 0) {
+			Com_Printf(".");
+		}
 		if (!sfx->name[0])
 			continue;
+
 		S_LoadSound (sfx);
 		//if(sfx->cache) {
 		//	sound_cache += sfx->cache->length;
@@ -451,7 +458,8 @@ void r_cache_stat(char *str);
 	}
 
 void r_cache_stat(char *str);
-	printf("\nsound: %d\n",snd_total);
+	Com_Printf("\n");
+	Com_DPrintf("sounds: %d\n",snd_total);
 	r_cache_stat("S_Precache after\n");
 	s_in_precache = 0;
 	//log_cache();
@@ -1220,7 +1228,7 @@ void S_Update_(void)
 // check to make sure that we haven't overshot
 	if (paintedtime < soundtime)
 	{
-		Com_Printf ("S_Update_ : overflow\n");
+		Com_DPrintf ("S_Update_ : overflow\n");
 		paintedtime = soundtime;
 	}
 
