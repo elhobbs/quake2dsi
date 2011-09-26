@@ -57,7 +57,7 @@ void S_StopAllSounds(void);
 
 int r_rache_is_empty = 1;
 void r_cache_clear() {
-	printf("r_cache_clear\n");
+	Com_DPrintf("r_cache_clear\n");
 #ifdef _ARM9
 	while((keysCurrent()&KEY_A) == 0);
 	while((keysCurrent()&KEY_A) != 0);
@@ -137,7 +137,7 @@ byte* r_cache_alloc(int size) {
 #endif
 		r_cache_print(size);
 		disable_keyb();
-		while(1);
+		Com_Error (ERR_DROP,"r_cache_alloc failed\n");
 	}
 	buf = &r_model_cache[r_model_cache_used];
 	memset(buf,0,size);
@@ -168,7 +168,7 @@ byte* r_cache_alloc_temp(int size) {
 		printf("ERROR: r_cache_alloc_temp %08X\n",lr);
 		r_cache_print(size);
 		disable_keyb();
-		while(1);
+		Com_Error (ERR_DROP,"r_cache_alloc_temp failed\n");
 	}
 	r_model_cache_temp += size;
 	buf = &r_model_cache[r_model_cache_total - r_model_cache_temp];

@@ -148,7 +148,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	else
 		Com_sprintf (namebuffer, sizeof(namebuffer), "sound/%s", name);
 
-	printf ("%s\n",namebuffer);
+	//printf ("%s\n",namebuffer);
 
 	FILE *h = (FILE *)s->handle;
 	size = s->len;
@@ -160,7 +160,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 		ds_fseek (h, s->pos, SEEK_SET);
 	}
 	if (!h) {
-		printf ("Couldn't load %s\n", namebuffer);
+		Com_DPrintf ("Couldn't load %s\n", namebuffer);
 		return NULL;
 	}
 	r_cache_set_fail(0);
@@ -171,7 +171,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 		if(close_file) {
 			ds_fclose (h);
 		}
-		printf ("Couldn't load %s\n", namebuffer);
+		Com_DPrintf ("Couldn't load %s\n", namebuffer);
 		return NULL;
 	}
 	FS_Read (data, size, h);
@@ -186,7 +186,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	if (info.channels != 1)
 	{
 		r_cache_set_fail(1);
-		printf ("%s is a stereo sample\n",s->name);
+		Com_DPrintf ("%s is a stereo sample\n",s->name);
 		//FS_FreeFile (data);
 		Z_Free(data);
 		return NULL;

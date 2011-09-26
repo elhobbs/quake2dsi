@@ -178,7 +178,7 @@ CL_RegisterSounds
 */
 void CL_RegisterSounds (void)
 {
-	int		i;
+	int		i,n;
 	
 //	register unsigned int lr_r asm ("lr");
 //	volatile unsigned int lr = lr_r;
@@ -188,16 +188,20 @@ void CL_RegisterSounds (void)
 	void r_cache_stat(char *str);
 	r_cache_stat("CL_RegisterSounds\n");
 	
-	printf("sounds\n0%%");
+	printf("loading sounds\n");
 
 	S_BeginRegistration ();
 	CL_RegisterTEntSounds ();
 	for (i=1 ; i<MAX_SOUNDS ; i++)
 	{
-		if (i >= 2) {
-			if (((i - 1) % (MAX_SOUNDS / 5)) == 0) {
-				printf("..%d%%", (int)((float)(i - 1) / MAX_SOUNDS * 100));
-			}
+		if (!cl.configstrings[CS_SOUNDS+i][0])
+			break;
+	}
+	n = i / 32;
+	for (i=1 ; i<MAX_SOUNDS ; i++)
+	{
+		if ((i % n) == 0) {
+			printf(".");
 		}
 		if (!cl.configstrings[CS_SOUNDS+i][0])
 			break;
